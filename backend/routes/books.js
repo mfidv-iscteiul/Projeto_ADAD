@@ -24,6 +24,15 @@ router.get("/top/:limit", async (req, res) => {
         }},
         {$sort: { 
             average_score: -1 
+        }},
+        {$lookup: {
+            from: "books",
+            localField: "_id",
+            foreignField: "_id",
+            as: "livro"
+        }},
+        { $project: {
+            _id:0
         }}
     ]).limit(parseInt(req.params.limit)).toArray();
 
