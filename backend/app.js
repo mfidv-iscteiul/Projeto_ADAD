@@ -7,6 +7,7 @@ import livrarias from "./routes/livrarias.js";
 const app = express()
 const port = 3000
 
+app.use(express.json());
 // Load the routes
 app.use("/books", books);
 app.use("/users", users);

@@ -1,5 +1,6 @@
 import express from "express";
 import db from "../db/config.js";
+import { ObjectId } from "mongodb";
 const router = express.Router();
 
 
@@ -19,12 +20,31 @@ router.get("/", async(req, res) => {
 } )
 
 //Endpoint 4
-router.get("/", async(req, res) => {
-   const user = req.body;
-   
-   let results = await db.collection("users")
+router.post("/", async (req, res) => {
+    try {
+      const user = req.body;
+  
+      // Verifica se `users` é um array (vários usuários) ou um objeto (um único usuário)
+      if (Array.isArray(user)) {
+    
+        // Insere vários usuários
+        const result = await db.collection("users").insertMany(user);
+        res.send(result).status(200);
+         
+    
+      } else {
+       
+        // Insere um único usuário
+        const result = await db.collection("users").insertOne(user);
+        res.send(result).status(200);
+      }
+    } catch (error) {
+    
+      res.status(500).json({ message: "Erro ao adicionar usuários" });
+    }
+  });
 
-} )
+
 
 
 
