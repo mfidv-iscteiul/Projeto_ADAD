@@ -49,7 +49,7 @@ router.post("/", async (req, res) => {
 
 
 //Endpoint 10
-router.post("/:id", (req, res) => {
+router.put("/:id", (req, res) => {
     let results = db.collection("users").updateOne(
         {_id: req.params.id},
         {$set: req.body}

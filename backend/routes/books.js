@@ -3,7 +3,7 @@ import db from "../db/config.js";
 const router = express.Router();
 
 //Endpoint 9
-router.post("/:id", (req, res) => {
+router.put("/:id", (req, res) => {
     let results = db.collection("books").updateOne(
         {_id: parseInt(req.params.id)},
         {$set: req.body}
