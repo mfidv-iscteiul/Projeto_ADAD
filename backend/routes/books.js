@@ -3,12 +3,11 @@ import db from "../db/config.js";
 const router = express.Router();
 
 //Endpoint 9
-router.put("/:id", (req, res) => {
-    let results = db.collection("books").updateOne(
+router.put("/:id", async (req, res) => {
+    let results = await db.collection("books").updateOne(
         {_id: parseInt(req.params.id)},
         {$set: req.body}
     )
-
     res.send(results).status(200);
 })
 

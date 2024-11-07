@@ -1,6 +1,5 @@
 import express from "express";
 import db from "../db/config.js";
-import { ObjectId } from "mongodb";
 const router = express.Router();
 
 
@@ -49,8 +48,8 @@ router.post("/", async (req, res) => {
 
 
 //Endpoint 10
-router.put("/:id", (req, res) => {
-    let results = db.collection("users").updateOne(
+router.put("/:id", async (req, res) => {
+    let results = await db.collection("users").updateOne(
         {_id: req.params.id},
         {$set: req.body}
     )
