@@ -4,11 +4,15 @@ const router = express.Router();
 
 //Endpoint 9
 router.put("/:id", async (req, res) => {
-    let results = await db.collection("books").updateOne(
-        {_id: parseInt(req.params.id)},
-        {$set: req.body}
-    )
-    res.send(results).status(200);
+    try {
+        let results = await db.collection("books").updateOne(
+            {_id: parseInt(req.params.id)},
+            {$set: req.body}
+        )
+        res.send(results).status(200);
+    } catch (error) {
+        res.send({ message: "Erro ao atualizar livro." }).status(500);
+    }
 })
 
 //Endpoint 11
@@ -65,6 +69,9 @@ router.get("/ratings/:order", async (req, res) => {
     ]).toArray();
 
     res.send(results).status(200);
+    } catch (error) {
+        res.send({ message: "Erro ao buscar utilizadores e livros." }).status(500);
+    }
 })
 
 //Endpoint 13
