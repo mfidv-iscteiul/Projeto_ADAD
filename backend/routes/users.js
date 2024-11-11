@@ -131,12 +131,16 @@ router.delete("/:id", async (req, res) => {
 
 //Endpoint 10
 router.put("/:id", async (req, res) => {
+  try{
     let results = await db.collection("users").updateOne(
-        {_id: req.params.id},
-        {$set: req.body}
+      {_id: req.params.id},
+      {$set: req.body}
     )
 
     res.send(results).status(200);
+  } catch (error){
+    res.send({ message: "Erro ao atualizar usuário." }).status(500);
+  }
 })
 
 export default router;

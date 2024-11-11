@@ -4,43 +4,52 @@ const router = express.Router();
 
 //Endpoint 9
 router.put("/:id", async (req, res) => {
-    let results = await db.collection("books").updateOne(
-        {_id: parseInt(req.params.id)},
-        {$set: req.body}
-    )
-    res.send(results).status(200);
+    try {
+        let results = await db.collection("books").updateOne(
+            {_id: parseInt(req.params.id)},
+            {$set: req.body}
+        )
+        res.send(results).status(200);
+    } catch (error) {
+        res.send({ message: "Erro ao atualizar livro." }).status(500);
+    }
 })
 
 //Endpoint 11
 router.get("/top/:limit", async (req, res) => {
-    let results = await db.collection("users").aggregate([
-        {$unwind :
-            "$reviews"
-        },
-        {$group : {
-            _id: "$reviews.book_id",
-            average_score: {$avg: "$reviews.score"}
-        }},
-        {$sort: { 
-            average_score: -1 
-        }},
-        {$lookup: {
-            from: "books",
-            localField: "_id",
-            foreignField: "_id",
-            as: "livro"
-        }},
-        { $project: {
-            _id:0
-        }}
-    ]).limit(parseInt(req.params.limit)).toArray();
-
-    res.send(results).status(200);
+    try {
+        let results = await db.collection("users").aggregate([
+            {$unwind :
+                "$reviews"
+            },
+            {$group : {
+                _id: "$reviews.book_id",
+                average_score: {$avg: "$reviews.score"}
+            }},
+            {$sort: { 
+                average_score: -1 
+            }},
+            {$lookup: {
+                from: "books",
+                localField: "_id",
+                foreignField: "_id",
+                as: "livro"
+            }},
+            { $project: {
+                _id:0
+            }}
+        ]).limit(parseInt(req.params.limit)).toArray();
+    
+        res.send(results).status(200);
+    } catch (error) {
+        res.send({ message: "Erro ao buscar utilizadores e livros." }).status(500);
+    }
 })
 
 //Endpoint 12
 router.get("/ratings/:order", async (req, res) => {
-    const order = req.params.order == "asc" ? 1 : -1;
+    try {
+        const order = req.params.order == "asc" ? 1 : -1;
     
     let results = await db.collection("users").aggregate([
         {$unwind :
@@ -65,6 +74,9 @@ router.get("/ratings/:order", async (req, res) => {
     ]).toArray();
 
     res.send(results).status(200);
+    } catch (error) {
+        res.send({ message: "Erro ao buscar utilizadores e livros." }).status(500);
+    }
 })
 
 export default router;
