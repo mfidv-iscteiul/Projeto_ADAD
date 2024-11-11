@@ -46,6 +46,50 @@ router.post("/", async (req, res) => {
 
 
 
+  //endpoint 6
+  router.get("/:id", async(req, res) => {
+    try {
+    const userID = isNaN(req.params.id) ? new ObjectId(req.params.id) : parseInt(req.params.id);
+
+   const result = await db.collection("users").aggregate([
+    {$match: {_id: userID}},
+    { $unwind : "$reviews"},
+    { $sort : {"reviews.score": -1 }},
+    
+   {$lookup: {
+          from: "books",
+          localField: "reviews.book_id",
+          foreignField: "_id",
+          as: "book_details"
+}},
+    {$limit : 3},
+    {$group: {
+      _id: userID,
+      first_name: { $first: "$first_name" },
+          last_name: { $first: "$last_name" },
+      top3_books: {
+        $push: {
+          score: "$reviews.score",
+          recommendation: "$reviews.recommendation",
+          review_date: "$reviews.review_date",
+          book_details: "$book_details" 
+        }
+      }
+    }
+    }
+   ]).toArray();
+
+   res.send(result).status(200);
+  
+  } catch (error) {
+    console.error("Erro ao buscar usuário e livros:", error);
+    res.status(500).json({ message: "Erro ao buscar usuário e livros." });
+  }
+} )
+
+
+
+
   //Endpoint 8
 router.delete("/:id", async (req, res) => {
   const userID = req.params.id;
