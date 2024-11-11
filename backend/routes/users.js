@@ -133,7 +133,7 @@ router.delete("/:id", async (req, res) => {
 router.put("/:id", async (req, res) => {
   try{
     let results = await db.collection("users").updateOne(
-      {_id: req.params.id},
+      {_id: parseInt(req.params.id)},
       {$set: req.body}
     )
 
