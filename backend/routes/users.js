@@ -2,6 +2,7 @@ import express from "express";
 import db from "../db/config.js";
 import { ObjectId } from "mongodb";
 const router = express.Router();
+import { verifyID } from './books.js'; // para ir buscar a funcao desenvolvida nos books
 
 
 //Endpoint 2
@@ -9,7 +10,7 @@ const router = express.Router();
 router.get("/", async(req, res) => {
     const page = req.query.page || 0 ; // vai buscar a pagina que podera estar numa query do tipo ?page=1
     const usersPerPage=5;
-
+    
 
     let results = await db.collection("users").find({})
     .skip(page* usersPerPage)
@@ -49,7 +50,9 @@ router.post("/", async (req, res) => {
   //endpoint 6
   router.get("/:id", async(req, res) => {
     try {
-    const userID = isNaN(req.params.id) ? new ObjectId(req.params.id) : parseInt(req.params.id);
+    
+      const userID = verifyID(req.params.id);
+    //const userID = isNaN(req.params.id) ? new ObjectId(req.params.id) : parseInt(req.params.id);
 
    const result = await db.collection("users").aggregate([
     {$match: {_id: userID}},
@@ -92,12 +95,13 @@ router.post("/", async (req, res) => {
 
   //Endpoint 8
 router.delete("/:id", async (req, res) => {
-  const userID = req.params.id;
+  const userID = verifyID(req.params.id);
+  //const userID = isNaN(req.params.id) ? new ObjectId(req.params.id) : parseInt(req.params.id);
   try {
-    if (isNaN(userID)) { //para verificar se e um objectId
+   
       console.log("entrei aqui no objeto");
       const result = await db.collection("users").deleteOne(
-            {_id: new ObjectId(userID)}); 
+            {_id: userID}); 
 
             if (result.deletedCount === 1) {
               console.log("entrei no if");
@@ -107,18 +111,7 @@ router.delete("/:id", async (req, res) => {
               
               res.status(404).json({ message: "Usuário não encontrado." });
             }
-    }
-    else{//se o Id for um numero
-        const result = await db.collection("users").deleteOne(
-        {_id: parseInt(userID)}); 
-
-        if (result.deletedCount === 1) { // Usuário removido com sucesso
-          res.send(result).status(200); 
-        }else {
-          // Usuário não encontrado
-          res.status(404).json({ message: "Usuário não encontrado." });
-        }
-    }
+    
   } catch (error) {
     res.status(500).json({ message: "Erro ao remover usuário." });
 

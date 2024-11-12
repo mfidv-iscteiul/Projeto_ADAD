@@ -3,7 +3,7 @@ import db from "../db/config.js";
 const router = express.Router();
 
 //Função auxiliar para verificar se o id é um Integer ou um ObjectID
-function verifyID(id) {
+export function verifyID(id) {
 	let aux;
 	if (!isNaN(id)) {
 	  aux = parseInt(id);
