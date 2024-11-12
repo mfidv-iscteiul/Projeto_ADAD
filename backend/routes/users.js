@@ -125,14 +125,22 @@ router.delete("/:id", async (req, res) => {
 //Endpoint 10
 router.put("/:id", async (req, res) => {
   try{
+    const userID = verifyID(req.params.id);
+    
     let results = await db.collection("users").updateOne(
-      {_id: parseInt(req.params.id)},
+      {_id: parseInt(userID)},
       {$set: req.body}
     )
 
-    res.send(results).status(200);
+    if(results.modifiedCount ===  1){
+			return res.send({message: "Utilizador atualizado com sucesso"}).status(200);
+		}else if (results.modifiedCount ===  0 && results.matchedCount ===  1) {
+			return res.send({message: "Informação para atualizar igual à enviada"}).status(200);
+		}
+		res.send({message: "Utilizador não encontrado"}).status(404);
+
   } catch (error){
-    res.send({ message: "Erro ao atualizar usuário." }).status(500);
+    res.send({ message: "Erro ao atualizar utilizador." }).status(500);
   }
 })
 
