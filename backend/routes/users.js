@@ -146,7 +146,7 @@ router.put("/:id", async (req, res) => {
       {$set: req.body},
     ) 
 
-    if(newReviews.length > 0){
+    if(newReviews.length > 0 && oldReviews[0].reviews.length > 0){
       var reviewResults = await db.collection("users").updateOne(
         {_id: userID},
         {$push: {reviews: {$each: oldReviews[0].reviews}}}
