@@ -2,6 +2,18 @@ import express from "express";
 import db from "../db/config.js";
 const router = express.Router();
 
+
+function getCoords(point){
+  const intCoords = [];
+  const coords = point.split(",");
+  coords.forEach((coord) => {
+    intCoords.push(parseFloat(coord));
+  });
+  return intCoords;
+}
+
+
+
 //  1. Adicionar livros da lista (books.json) a cada livraria.
 router.post('/:id', async (req, res) => {
     const bookIds = Array.isArray(req.body) ? req.body : [req.body]; // Verifica se é um array ou um único ID
@@ -49,18 +61,43 @@ router.get('/:id', async (req, res) => {
     }
   });
 
+// 3. Lista de livrarias perto de uma localização
+router.get('/near/:p1', async (req, res) => {
+  try {
+
+  const results= await db.collection("livrarias").find({
+    geometry:{
+      $near:{
+        $geometry:{
+          type:"Point", 
+          coordinates:[getCoords(req.params.p1)[0],getCoords(req.params.p1)[1] ],
+         
+        },
+          $minDistance: 0,
+          $maxDistance: 2000
+      }
+    }
+    
+
+
+  }).project({_id: 1, 
+      "properties.INF_NOME": 1,  // Nome da livraria
+      "properties.INF_MORADA": 1, // Endereço da livraria
+      "geometry.coordinates": 1  // Coordenadas da livraria
+      }).toArray();
+  res.send(results).status(200);
+} catch (error) {
+  res.send({ message: "Erro a consultar as livrarias mais perto", error: error.message }).status(500);
+}
+});
+
+
+
   //4. Lista de livrarias perto do caminho de uma rota (São passadas as quatro coordenadas neste formato: "longitude,latitude")
   router.get('/:p1/:p2/:p3/:p4', async (req, res) => {
     try {
 
-      function getCoords(point){
-        const intCoords = [];
-        const coords = point.split(",");
-        coords.forEach((coord) => {
-          intCoords.push(parseFloat(coord));
-        });
-        return intCoords;
-      }
+     
 
       let p1Long = getCoords(req.params.p1)[0];
       let p1Lat = getCoords(req.params.p1)[1];
