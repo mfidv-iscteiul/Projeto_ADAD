@@ -100,7 +100,7 @@ router.put("/:id", async (req, res) => {
 		const bookID = verifyID(req.params.id);
 
 		let results = await db.collection("books").updateOne(
-			{ _id: parseInt(bookID) },
+			{ _id: bookID },
 			{ $set: req.body }
 		)
 

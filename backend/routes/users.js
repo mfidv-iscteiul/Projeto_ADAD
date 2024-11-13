@@ -125,19 +125,37 @@ router.delete("/:id", async (req, res) => {
 //Endpoint 10
 router.put("/:id", async (req, res) => {
   try{
-    const userID = verifyID(req.params.id);
-    
-    let results = await db.collection("users").updateOne(
-      {_id: parseInt(userID)},
-      {$set: req.body}
-    )
+    function dealWithResults(results){
+      if(results.modifiedCount ===  1){
+        return res.send({message: "Utilizador atualizado com sucesso"}).status(200);
+      }else if (results.modifiedCount ===  0 && results.matchedCount ===  1) {
+        return res.send({message: "Informação para atualizar igual à enviada"}).status(200);
+      }
+      res.send({message: "Utilizador não encontrado"}).status(404);
+    }
 
-    if(results.modifiedCount ===  1){
-			return res.send({message: "Utilizador atualizado com sucesso"}).status(200);
-		}else if (results.modifiedCount ===  0 && results.matchedCount ===  1) {
-			return res.send({message: "Informação para atualizar igual à enviada"}).status(200);
-		}
-		res.send({message: "Utilizador não encontrado"}).status(404);
+    const userID = verifyID(req.params.id);
+		let newReviews = req.body.reviews;
+
+    if(newReviews.length > 0){
+      var oldReviews = await db.collection("users").find({_id: userID}).project({_id: 0, reviews: 1}).toArray();
+    }
+
+    let results = await db.collection("users").updateOne(
+      {_id: userID},
+      {$set: req.body},
+    ) 
+
+    if(newReviews.length > 0){
+      var reviewResults = await db.collection("users").updateOne(
+        {_id: userID},
+        {$push: {reviews: {$each: oldReviews[0].reviews}}}
+      )
+
+      return dealWithResults(reviewResults);
+    }
+    
+    return dealWithResults(results);
 
   } catch (error){
     res.send({ message: "Erro ao atualizar utilizador." }).status(500);
