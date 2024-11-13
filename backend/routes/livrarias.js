@@ -49,4 +49,47 @@ router.get('/:id', async (req, res) => {
     }
   });
 
+  //4. Lista de livrarias perto do caminho de uma rota (São passadas as quatro coordenadas neste formato: "longitude,latitude")
+  router.get('/:p1/:p2/:p3/:p4', async (req, res) => {
+    try {
+
+      function getCoords(point){
+        const intCoords = [];
+        const coords = point.split(",");
+        coords.forEach((coord) => {
+          intCoords.push(parseFloat(coord));
+        });
+        return intCoords;
+      }
+
+      let p1Long = getCoords(req.params.p1)[0];
+      let p1Lat = getCoords(req.params.p1)[1];
+      let p2Long = getCoords(req.params.p2)[0];
+      let p2Lat = getCoords(req.params.p2)[1];
+      let p3Long = getCoords(req.params.p3)[0];
+      let p3Lat = getCoords(req.params.p3)[1];
+      let p4Long = getCoords(req.params.p4)[0];
+      let p4Lat = getCoords(req.params.p4)[1];
+
+      const livrarias = await db.collection("livrarias").find({
+        geometry:{
+          $geoWithin: {
+            $geometry: {
+              type: "Polygon",
+              coordinates: [
+                [
+                  [ p1Long, p1Lat ], [ p2Long, p2Lat ], [ p3Long, p3Lat] , [ p4Long, p4Lat ], [ p1Long, p1Lat ]
+                ]
+              ]
+            }
+          }
+        }
+      }).project({_id: 0, type: 0, books: 0}).toArray();
+
+      res.send(livrarias).status(200);
+    } catch (error) {
+      res.send({ message: "Erro ao consultar livrarias", error: error.message }).status(500);
+    }
+  })
+
 export default router;
