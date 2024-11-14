@@ -20,7 +20,7 @@ router.get('/', async (req, res) => {
 	const page = parseInt(req.query.page) || 1;
 	const limit = parseInt(req.query.limit) || 10;
 	const skip = (page - 1) * limit;
-	
+
 	try {
 		console.log("entrei no endpoint 1")
 		const books = (await db.collection('books').find().sort({ _id: 1 }).skip(skip).limit(limit).toArray());
@@ -45,7 +45,7 @@ router.post('/', async (req, res) => {
 // 5. GET /books/:id - Buscar livro por _id com média de score e comentários
 router.get('/id/:id', async (req, res) => {
 	try {
-			console.log("entrei no endpoint 5")
+		console.log("entrei no endpoint 5")
 		let bookId = verifyID(req.params.id);
 		console.log(bookId)
 		// Buscar o livro com base no ID
@@ -210,7 +210,8 @@ router.get("/ratings/:order", async (req, res) => {
 //Endpoint 13
 router.get('/star', async (req, res) => {
 	try {
-		console.log("entrei no endpoint 13")
+		const page = req.query.page || 0; // vai buscar a pagina que podera estar numa query do tipo ?page=1
+		const usersPerPage = 20;
 		let results = await db.collection("users").aggregate([
 			//permite aceder ao array reviews
 			{ $unwind: "$reviews" },
@@ -236,8 +237,13 @@ router.get('/star', async (req, res) => {
 					as: "livro"
 				}
 			},
+			{
+				$sort: {
+					number_of_5_star_reviews: -1
+				}
+			},
 			{ $project: { _id: 0 } }
-		]).toArray();
+		]).skip(page * usersPerPage).limit(usersPerPage).toArray();
 		res.send(results).status(200);
 	} catch (error) {
 		res.send({ message: "Erro ao apresentar o número de reviews." }).status(500);
@@ -247,6 +253,8 @@ router.get('/star', async (req, res) => {
 //Endpoint 14
 router.get('/year/:year', async (req, res) => {
 	try {
+		const page = req.query.page || 0; // vai buscar a pagina que podera estar numa query do tipo ?page=1
+		const usersPerPage = 20;
 		//cria as os timestamps do ano pedido e do ano seguinte
 		const aux = parseInt(req.params.year) + 1
 		const timestamp1 = new Date(req.params.year).getTime().toString();
@@ -267,8 +275,13 @@ router.get('/year/:year', async (req, res) => {
 				$group: {
 					_id: "$reviews.book_id"
 				}
+			},
+			{
+				$sort: {
+					_id: 1
+				}
 			}
-		]).toArray();
+		]).skip(page * usersPerPage).limit(usersPerPage).toArray();
 		res.send(results).status(200);
 	} catch (error) {
 		res.send({ message: "Erro ao apresentar as avaliações." }).status(500);
@@ -278,6 +291,8 @@ router.get('/year/:year', async (req, res) => {
 //Endpoint 15
 router.get('/comments', async (req, res) => {
 	try {
+		const page = req.query.page || 0; // vai buscar a pagina que podera estar numa query do tipo ?page=1
+		const usersPerPage = 20;
 		let results = await db.collection("comments").aggregate([
 			//agrupa os livros por id e conta os comentários que cada um tem
 			{
@@ -306,7 +321,7 @@ router.get('/comments', async (req, res) => {
 					_id: 0
 				}
 			}
-		]).toArray();
+		]).skip(page * usersPerPage).limit(usersPerPage).toArray();
 		res.send(results).status(200);
 	} catch (error) {
 		res.send({ message: "Erro ao apresentar os comentários." }).status(500);
@@ -316,6 +331,8 @@ router.get('/comments', async (req, res) => {
 //Endpoint 16
 router.get('/job', async (req, res) => {
 	try {
+		const page = req.query.page || 0; // vai buscar a pagina que podera estar numa query do tipo ?page=1
+		const usersPerPage = 20;
 		let results = await db.collection("users").aggregate([
 			{
 				$unwind: "$reviews"
@@ -333,7 +350,7 @@ router.get('/job', async (req, res) => {
 					number_of_reviews: -1
 				}
 			}
-		]).toArray();
+		]).skip(page * usersPerPage).limit(usersPerPage).toArray();
 		res.send(results).status(200);
 	} catch (error) {
 		res.send({ message: "Erro ao apresentar o número de avaliações." }).status(500);
@@ -344,34 +361,34 @@ router.get('/job', async (req, res) => {
 router.get('/:price/:category/:author', async (req, res) => {
 	try {
 
-		
-		
+
+
 		let results = await db.collection("books").aggregate([
-			
+
 			{ //filtra o preço
-				$match:{
-					price: parseInt(req.params.price )
+				$match: {
+					price: parseInt(req.params.price)
 				}
 			},
 			//unwind à query categories
-			{$unwind: "$categories"},
+			{ $unwind: "$categories" },
 			{ //filtra a categoria
 				$match: {
 					categories: req.params.category
 				}
 			},
-			
+
 			//unwind à query authors
-			{ $unwind: "$authors"},
-			
+			{ $unwind: "$authors" },
+
 			{ //filtra o autor
 				$match: {
 					authors: req.params.author
 				}
 			},
-			
-			
-				
+
+
+
 		]).toArray();
 
 		res.send(results).status(200);
