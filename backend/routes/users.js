@@ -5,18 +5,27 @@ const router = express.Router();
 import { verifyID } from './books.js'; // para ir buscar a funcao desenvolvida nos books
 
 
+function doPagination(array){
+  if(array.length>20){
+    return true;
+  }
+return false;
+
+}
+
+
 //Endpoint 2
 
 router.get("/", async(req, res) => {
     const page = req.query.page || 0 ; // vai buscar a pagina que podera estar numa query do tipo ?page=1
-    const usersPerPage=5;
+    const usersPerPage=20;
     
 
     let results = await db.collection("users").find({})
-    .skip(page* usersPerPage)
-    .limit(usersPerPage)
+    /* .skip(page* usersPerPage)
+    .limit(usersPerPage) */
     .toArray();
-
+console.log(results[0])
     res.send(results).status(200);
 } )
 
@@ -25,11 +34,16 @@ router.post("/", async (req, res) => {
     try {
       const user = req.body;
   
+      
+
       // Verifica se `users` é um array (vários usuários) ou um objeto (um único usuário)
       if (Array.isArray(user)) {
     
         // Insere vários usuários
         const result = await db.collection("users").insertMany(user);
+
+        if (result.insertedCount === 0) return res.send({ message: "Nenhum user adicionado" }).status(404);
+
         res.send(result).status(200);
          
     
@@ -37,6 +51,9 @@ router.post("/", async (req, res) => {
        
         // Insere um único usuário
         const result = await db.collection("users").insertOne(user);
+
+        if (result.insertedCount === 0) return res.send({ message: "Nenhum user adicionado" }).status(404);
+
         res.send(result).status(200);
       }
     } catch (error) {
@@ -99,7 +116,6 @@ router.delete("/:id", async (req, res) => {
   //const userID = isNaN(req.params.id) ? new ObjectId(req.params.id) : parseInt(req.params.id);
   try {
    
-      console.log("entrei aqui no objeto");
       const result = await db.collection("users").deleteOne(
             {_id: userID}); 
 

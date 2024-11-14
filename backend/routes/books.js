@@ -20,8 +20,9 @@ router.get('/', async (req, res) => {
 	const page = parseInt(req.query.page) || 1;
 	const limit = parseInt(req.query.limit) || 10;
 	const skip = (page - 1) * limit;
-
+	
 	try {
+		console.log("entrei no endpoint 1")
 		const books = (await db.collection('books').find().sort({ _id: 1 }).skip(skip).limit(limit).toArray());
 		res.send({ page, limit, books }).status(200);
 	} catch (error) {
@@ -42,10 +43,11 @@ router.post('/', async (req, res) => {
 });
 
 // 5. GET /books/:id - Buscar livro por _id com média de score e comentários
-router.get('/:id', async (req, res) => {
+router.get('/id/:id', async (req, res) => {
 	try {
+			console.log("entrei no endpoint 5")
 		let bookId = verifyID(req.params.id);
-
+		console.log(bookId)
 		// Buscar o livro com base no ID
 		const book = await db.collection("books").aggregate([
 			{ $match: { _id: bookId } },
@@ -206,6 +208,7 @@ router.get("/ratings/:order", async (req, res) => {
 //Endpoint 13
 router.get('/star', async (req, res) => {
 	try {
+		console.log("entrei no endpoint 13")
 		let results = await db.collection("users").aggregate([
 			//permite aceder ao array reviews
 			{ $unwind: "$reviews" },
