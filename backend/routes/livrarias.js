@@ -73,7 +73,6 @@ router.get('/near/:p1', async (req, res) => {
           coordinates:[getCoords(req.params.p1)[0],getCoords(req.params.p1)[1] ],
          
         },
-          $minDistance: 0,
           $maxDistance: 2000
       }
     }

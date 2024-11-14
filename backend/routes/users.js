@@ -19,14 +19,18 @@ return false;
 router.get("/", async(req, res) => {
     const page = req.query.page || 0 ; // vai buscar a pagina que podera estar numa query do tipo ?page=1
     const usersPerPage=20;
-    
+    try {
 
     let results = await db.collection("users").find({})
-    /* .skip(page* usersPerPage)
-    .limit(usersPerPage) */
+     .skip(page* usersPerPage)
+    .limit(usersPerPage) 
     .toArray();
-console.log(results[0])
+//console.log(results[0])
     res.send(results).status(200);
+    }
+     catch (error) {
+      res.status(500).json({ message: "Erro a listar os users" });
+    }
 } )
 
 //Endpoint 4
@@ -98,11 +102,11 @@ router.post("/", async (req, res) => {
     }
     }
    ]).toArray();
-
+   if (result.length === 0) return res.send({ message: "User não encontrado" }).status(404);
    res.send(result).status(200);
   
   } catch (error) {
-    console.error("Erro ao buscar usuário e livros:", error);
+   
     res.status(500).json({ message: "Erro ao buscar usuário e livros." });
   }
 } )
@@ -120,7 +124,7 @@ router.delete("/:id", async (req, res) => {
             {_id: userID}); 
 
             if (result.deletedCount === 1) {
-              console.log("entrei no if");
+            
               res.send(result).status(200);
             }
             else {   // Usuário não encontrado
