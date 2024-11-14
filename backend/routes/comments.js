@@ -35,7 +35,7 @@ router.delete("/:id", async (req, res) => {
                 console.log("entrei no if");
                 res.send(result).status(200);
             }
-            else {   // comentario não encontrado
+            else {   // comentario nao encontrado
 
                 res.status(404).json({ message: "comentario não encontrado." });
             }
@@ -44,7 +44,7 @@ router.delete("/:id", async (req, res) => {
             const result = await db.collection("comments").deleteOne(
                 { _id: parseInt(commentID) });
 
-            if (result.deletedCount === 1) { // Usuário removido com sucesso
+            if (result.deletedCount === 1) { // comentario removido com sucesso
                 res.send(result).status(200);
             } else {
                 // Usuário não encontrado

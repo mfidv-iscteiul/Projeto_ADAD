@@ -122,7 +122,6 @@ router.get('/:p1/:p2/:p3/:p4', async (req, res) => {
 				}
 			}
 		}).project({ _id: 0, type: 0, books: 0 }).toArray();
-
 		res.send(livrarias).status(200);
 	} catch (error) {
 		res.send({ message: "Erro ao consultar livrarias", error: error.message }).status(500);
@@ -152,4 +151,40 @@ router.get('/lib/:lat/:lng', async (req, res) => {
 	}
 })
 
+
+// 6. Verificar se um determinado usuário (Ponto) se encontra dentro da feira do livro
+//Coordenadas dentro do parque para teste: -9.155644342145884,38.72749043040882
+//Coordenadas fora do parque para teste: -9.155644342145884,38.72749043040882
+
+ router.get('/feiralivro/contains/:coords', async (req, res) => {
+    try {
+        // Converter as coordenadas do usuário com a função getCoords
+        let p1Long = getCoords(req.params.coords)[0];
+        let p1Lat = getCoords(req.params.coords)[1];
+
+        // Consultar a feira do livro usando o operador $geoIntersects
+        const feiraDoLivro = await db.collection("livrarias").find({
+            geometry: {
+                $geoIntersects: {
+                    $geometry: {
+                        type: "Point",
+                        coordinates: 
+                            [ p1Long, p1Lat ]
+                    }
+                }
+            }
+        }).toArray();
+     if(feiraDoLivro.length > 0 ){
+        res.send({ message: "O usuário está dentro da área da feira do livro." }).status(200);
+
+        }else{
+        res.send({ message: "O usuário não está dentro da área da feira do livro." }).status(404);
+        }
+
+    } catch (error) {
+      res.send({ message: "Erro ao consultar livrarias", error: error.message }).status(500);
+    }
+  })
+
 export default router;
+
