@@ -335,4 +335,44 @@ router.get('/job', async (req, res) => {
 	}
 })
 
+//Endpoint 17 colocar na documentação que é obrigatório colocar autor, ou então, posso desenvolver, caso não seja passado um autor
+router.get('/:price/:category/:author', async (req, res) => {
+	try {
+
+		
+		
+		let results = await db.collection("books").aggregate([
+			
+			{ //filtra o preço
+				$match:{
+					price: parseInt(req.params.price )
+				}
+			},
+			//unwind à query categories
+			{$unwind: "$categories"},
+			{ //filtra a categoria
+				$match: {
+					categories: req.params.category
+				}
+			},
+			
+			//unwind à query authors
+			{ $unwind: "$authors"},
+			
+			{ //filtra o autor
+				$match: {
+					authors: req.params.author
+				}
+			},
+			
+			
+				
+		]).toArray();
+
+		res.send(results).status(200);
+	} catch (error) {
+		res.send({ message: "Erro " }).status(500);
+	}
+})
+
 export default router;
