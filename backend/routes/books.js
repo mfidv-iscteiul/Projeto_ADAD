@@ -122,6 +122,7 @@ router.put("/:id", async (req, res) => {
 //Endpoint 11
 router.get("/top/:limit", async (req, res) => {
 	try {
+		const page = req.query.page || 0 ;
 		let results = await db.collection("users").aggregate([
 			{
 				$unwind:
@@ -152,7 +153,7 @@ router.get("/top/:limit", async (req, res) => {
 					"livro._id": 0
 				}
 			}
-		]).limit(parseInt(req.params.limit)).toArray();
+		]).limit(parseInt(req.params.limit)).skip(page * 20).limit(20).toArray();
 
 		res.send(results).status(200);
 
@@ -164,6 +165,7 @@ router.get("/top/:limit", async (req, res) => {
 //Endpoint 12
 router.get("/ratings/:order", async (req, res) => {
 	try {
+		const page = req.query.page || 0 ;
 		const order = req.params.order == "asc" ? 1 : -1;
 
 		let results = await db.collection("users").aggregate([
@@ -196,7 +198,7 @@ router.get("/ratings/:order", async (req, res) => {
 					"livro._id": 0
 				}
 			}
-		]).toArray();
+		]).skip(page * 20).limit(20).toArray();
 
 		res.send(results).status(200);
 
