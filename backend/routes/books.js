@@ -122,7 +122,7 @@ router.put("/:id", async (req, res) => {
 //Endpoint 11
 router.get("/top/:limit", async (req, res) => {
 	try {
-		const page = req.query.page || 0;
+		const page = req.query.page || 1;
 		let results = await db.collection("users").aggregate([
 			{
 				$unwind:
@@ -153,7 +153,7 @@ router.get("/top/:limit", async (req, res) => {
 					"livro._id": 0
 				}
 			}
-		]).limit(parseInt(req.params.limit)).skip(page * 20).limit(20).toArray();
+		]).limit(parseInt(req.params.limit)).skip((page-1) * 20).limit(20).toArray();
 
 		res.send(results).status(200);
 
@@ -165,7 +165,7 @@ router.get("/top/:limit", async (req, res) => {
 //Endpoint 12
 router.get("/ratings/:order", async (req, res) => {
 	try {
-		const page = req.query.page || 0;
+		const page = req.query.page || 1;
 		const order = req.params.order == "asc" ? 1 : -1;
 
 		let results = await db.collection("users").aggregate([
@@ -198,7 +198,7 @@ router.get("/ratings/:order", async (req, res) => {
 					"livro._id": 0
 				}
 			}
-		]).skip(page * 20).limit(20).toArray();
+		]).skip((page-1) * 20).limit(20).toArray();
 
 		res.send(results).status(200);
 
@@ -210,7 +210,7 @@ router.get("/ratings/:order", async (req, res) => {
 //Endpoint 13
 router.get('/star', async (req, res) => {
 	try {
-		const page = req.query.page || 0; // vai buscar a pagina que podera estar numa query do tipo ?page=1
+		const page = req.query.page || 1; // vai buscar a pagina que podera estar numa query do tipo ?page=1
 		const usersPerPage = 20;
 		let results = await db.collection("users").aggregate([
 			//permite aceder ao array reviews
@@ -243,7 +243,7 @@ router.get('/star', async (req, res) => {
 				}
 			},
 			{ $project: { _id: 0 } }
-		]).skip(page * usersPerPage).limit(usersPerPage).toArray();
+		]).skip((page-1)* usersPerPage).limit(usersPerPage).toArray();
 		res.send(results).status(200);
 	} catch (error) {
 		res.send({ message: "Erro ao apresentar as informções do Livro com 5 estrelas" }).status(500);
@@ -253,7 +253,7 @@ router.get('/star', async (req, res) => {
 //Endpoint 14
 router.get('/year/:year', async (req, res) => {
 	try {
-		const page = req.query.page || 0; // vai buscar a pagina que podera estar numa query do tipo ?page=1
+		const page = req.query.page || 1; // vai buscar a pagina que podera estar numa query do tipo ?page=1
 		const usersPerPage = 20;
 		//cria as os timestamps do ano pedido e do ano seguinte
 		const aux = parseInt(req.params.year) + 1
@@ -294,7 +294,7 @@ router.get('/year/:year', async (req, res) => {
 					"livro.title": 1, "livro._id": 1, _id: 0
 				}
 			}
-		]).skip(page * usersPerPage).limit(usersPerPage).toArray();
+		]).skip((page-1) * usersPerPage).limit(usersPerPage).toArray();
 		res.send(results).status(200);
 	} catch (error) {
 		res.send({ message: "Erro ao apresentar as avaliações." }).status(500);
@@ -304,7 +304,7 @@ router.get('/year/:year', async (req, res) => {
 //Endpoint 15
 router.get('/comments', async (req, res) => {
 	try {
-		const page = req.query.page || 0; // vai buscar a pagina que podera estar numa query do tipo ?page=1
+		const page = req.query.page || 1; // vai buscar a pagina que podera estar numa query do tipo ?page=1
 		const usersPerPage = 20;
 		let results = await db.collection("comments").aggregate([
 			//agrupa os livros por id e conta os comentários que cada um tem
@@ -334,7 +334,7 @@ router.get('/comments', async (req, res) => {
 					_id: 0
 				}
 			}
-		]).skip(page * usersPerPage).limit(usersPerPage).toArray();
+		]).skip((page-1) * usersPerPage).limit(usersPerPage).toArray();
 		res.send(results).status(200);
 	} catch (error) {
 		res.send({ message: "Erro ao apresentar os comentários." }).status(500);
@@ -344,7 +344,7 @@ router.get('/comments', async (req, res) => {
 //Endpoint 16
 router.get('/job', async (req, res) => {
 	try {
-		const page = req.query.page || 0; // vai buscar a pagina que podera estar numa query do tipo ?page=1
+		const page = req.query.page || 1; // vai buscar a pagina que podera estar numa query do tipo ?page=1
 		const usersPerPage = 20;
 		let results = await db.collection("users").aggregate([
 			{
@@ -363,7 +363,7 @@ router.get('/job', async (req, res) => {
 					number_of_reviews: -1
 				}
 			}
-		]).skip(page * usersPerPage).limit(usersPerPage).toArray();
+		]).skip((page-1) * usersPerPage).limit(usersPerPage).toArray();
 		res.send(results).status(200);
 	} catch (error) {
 		res.send({ message: "Erro ao apresentar o número de avaliações." }).status(500);
