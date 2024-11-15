@@ -147,11 +147,11 @@ router.put("/:id", async (req, res) => {
   try{
     function dealWithResults(results){
       if(results.modifiedCount ===  1){
-        return res.send({message: "Utilizador atualizado com sucesso"}).status(200);
+        return res.send({message: "User atualizado com sucesso"}).status(200);
       }else if (results.modifiedCount ===  0 && results.matchedCount ===  1) {
         return res.send({message: "Informação para atualizar igual à enviada"}).status(200);
       }
-      res.send({message: "Utilizador não encontrado"}).status(404);
+      res.send({message: "User não encontrado"}).status(404);
     }
 
     const userID = verifyID(req.params.id);
@@ -178,7 +178,7 @@ router.put("/:id", async (req, res) => {
     return dealWithResults(results);
 
   } catch (error){
-    res.send({ message: "Erro ao atualizar utilizador." }).status(500);
+    res.send({ message: "Erro ao atualizar User." }).status(500);
   }
 })
 

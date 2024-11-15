@@ -246,7 +246,7 @@ router.get('/star', async (req, res) => {
 		]).skip(page * usersPerPage).limit(usersPerPage).toArray();
 		res.send(results).status(200);
 	} catch (error) {
-		res.send({ message: "Erro ao apresentar o número de reviews." }).status(500);
+		res.send({ message: "Erro ao apresentar as informções do Livro com 5 estrelas" }).status(500);
 	}
 })
 
