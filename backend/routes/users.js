@@ -17,12 +17,13 @@ return false;
 //Endpoint 2
 
 router.get("/", async(req, res) => {
-    const page = req.query.page || 1 ; // vai buscar a pagina que podera estar numa query do tipo ?page=1
+    const page = parseInt(req.query.page) || 1 ; 
+    const safePage = page > 0 ? page : 1; 
     const usersPerPage=20;
     try {
 
     let results = await db.collection("users").find({})
-     .skip((page-1)* usersPerPage)
+     .skip((safePage-1)* usersPerPage)
     .limit(usersPerPage) 
     .toArray();
 //console.log(results[0])

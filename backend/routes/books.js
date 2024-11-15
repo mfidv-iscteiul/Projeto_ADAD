@@ -18,8 +18,9 @@ export function verifyID(id) {
 // 1. GET /books - Lista de livros com paginação
 router.get('/', async (req, res) => {
 	const page = parseInt(req.query.page) || 1;
+	const safePage = page > 0 ? page : 1; 
 	const limit = parseInt(req.query.limit) || 20;
-	const skip = (page - 1) * limit;
+	const skip = (safePage - 1) * limit;
 
 	try {
 		console.log("entrei no endpoint 1")
@@ -123,6 +124,7 @@ router.put("/:id", async (req, res) => {
 router.get("/top/:limit", async (req, res) => {
 	try {
 		const page = req.query.page || 1;
+		const safePage = page > 0 ? page : 1; 
 		let results = await db.collection("users").aggregate([
 			{
 				$unwind:
@@ -153,7 +155,7 @@ router.get("/top/:limit", async (req, res) => {
 					"livro._id": 0
 				}
 			}
-		]).limit(parseInt(req.params.limit)).skip((page-1) * 20).limit(20).toArray();
+		]).limit(parseInt(req.params.limit)).skip((safePage-1) * 20).limit(20).toArray();
 
 		res.send(results).status(200);
 
@@ -166,6 +168,7 @@ router.get("/top/:limit", async (req, res) => {
 router.get("/ratings/:order", async (req, res) => {
 	try {
 		const page = req.query.page || 1;
+		const safePage = page > 0 ? page : 1; 
 		const order = req.params.order == "asc" ? 1 : -1;
 
 		let results = await db.collection("users").aggregate([
@@ -198,7 +201,7 @@ router.get("/ratings/:order", async (req, res) => {
 					"livro._id": 0
 				}
 			}
-		]).skip((page-1) * 20).limit(20).toArray();
+		]).skip((safePage-1) * 20).limit(20).toArray();
 
 		res.send(results).status(200);
 
@@ -211,6 +214,7 @@ router.get("/ratings/:order", async (req, res) => {
 router.get('/star', async (req, res) => {
 	try {
 		const page = req.query.page || 1; // vai buscar a pagina que podera estar numa query do tipo ?page=1
+		const safePage = page > 0 ? page : 1; 
 		const usersPerPage = 20;
 		let results = await db.collection("users").aggregate([
 			//permite aceder ao array reviews
@@ -243,7 +247,7 @@ router.get('/star', async (req, res) => {
 				}
 			},
 			{ $project: { _id: 0 } }
-		]).skip((page-1)* usersPerPage).limit(usersPerPage).toArray();
+		]).skip((safePage-1)* usersPerPage).limit(usersPerPage).toArray();
 		res.send(results).status(200);
 	} catch (error) {
 		res.send({ message: "Erro ao apresentar as informções do Livro com 5 estrelas" }).status(500);
@@ -254,6 +258,7 @@ router.get('/star', async (req, res) => {
 router.get('/year/:year', async (req, res) => {
 	try {
 		const page = req.query.page || 1; // vai buscar a pagina que podera estar numa query do tipo ?page=1
+		const safePage = page > 0 ? page : 1; 
 		const usersPerPage = 20;
 		//cria as os timestamps do ano pedido e do ano seguinte
 		const aux = parseInt(req.params.year) + 1
@@ -294,7 +299,7 @@ router.get('/year/:year', async (req, res) => {
 					"livro.title": 1, "livro._id": 1, _id: 0
 				}
 			}
-		]).skip((page-1) * usersPerPage).limit(usersPerPage).toArray();
+		]).skip((safePage-1) * usersPerPage).limit(usersPerPage).toArray();
 		res.send(results).status(200);
 	} catch (error) {
 		res.send({ message: "Erro ao apresentar as avaliações." }).status(500);
@@ -334,7 +339,7 @@ router.get('/comments', async (req, res) => {
 					_id: 0
 				}
 			}
-		]).skip((page-1) * usersPerPage).limit(usersPerPage).toArray();
+		]).skip((safePage-1) * usersPerPage).limit(usersPerPage).toArray();
 		res.send(results).status(200);
 	} catch (error) {
 		res.send({ message: "Erro ao apresentar os comentários." }).status(500);
@@ -345,6 +350,7 @@ router.get('/comments', async (req, res) => {
 router.get('/job', async (req, res) => {
 	try {
 		const page = req.query.page || 1; // vai buscar a pagina que podera estar numa query do tipo ?page=1
+		const safePage = page > 0 ? page : 1; 
 		const usersPerPage = 20;
 		let results = await db.collection("users").aggregate([
 			{
@@ -363,7 +369,7 @@ router.get('/job', async (req, res) => {
 					number_of_reviews: -1
 				}
 			}
-		]).skip((page-1) * usersPerPage).limit(usersPerPage).toArray();
+		]).skip((safePage-1) * usersPerPage).limit(usersPerPage).toArray();
 		res.send(results).status(200);
 	} catch (error) {
 		res.send({ message: "Erro ao apresentar o número de avaliações." }).status(500);
