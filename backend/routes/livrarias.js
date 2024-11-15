@@ -39,27 +39,39 @@ router.post('/:id', async (req, res) => {
 		res.send({ message: "Erro ao adicionar livros", error: error.message }).status(500);
 	}
 });
-
-
-
-// 2. Consultar livros numa livraria específica
+  
+// 2. Consultar livros numa livraria específica com paginação
 router.get('/:id', async (req, res) => {
-
 	try {
-		const livraria = await db.collection("livrarias").findOne(
-			{ _id: parseInt(req.params.id) },
-			{ projection: { books: 1 } }
-		);
-
-		if (!livraria) {
-			return res.send({ message: "Livraria não encontrada" }).status(404);
+		const page = parseInt(req.query.page) || 1;
+		const limit = 20;
+		const skip = (page - 1) * limit;
+	  
+	  const livraria = await db.collection("livrarias").aggregate([
+		{ $match: { _id: parseInt(req.params.id) } },
+		{ $unwind: "$books" },
+  		{ $skip: skip },
+		{ $limit: limit },
+		{ $group: { 
+			_id: "$_id", 
+			books: { $push: "$books" }
+		  } 
 		}
-
-		res.send(livraria.books).status(200);
+	  ]).toArray();
+  
+	  // Verifica se a livraria foi encontrada
+	  if (livraria.length === 0) {
+		return res.status(404).send({ message: "Livraria vazia / Livraria não encontrada" });
+	  }
+  
+	  // Retorna os livros paginados para a livraria
+	  res.status(200).send({page, limit, livraria});
+	  
 	} catch (error) {
-		res.send({ message: "Erro ao consultar livros", error: error.message }).status(500);
+	  res.status(500).send({ message: "Erro ao consultar livros", error: error.message });
 	}
-});
+  });
+  
 
 // 3. Lista de livrarias perto de uma localização
 router.get('/near/:p1', async (req, res) => {
