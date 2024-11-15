@@ -122,7 +122,7 @@ router.put("/:id", async (req, res) => {
 //Endpoint 11
 router.get("/top/:limit", async (req, res) => {
 	try {
-		const page = req.query.page || 0 ;
+		const page = req.query.page || 0;
 		let results = await db.collection("users").aggregate([
 			{
 				$unwind:
@@ -165,7 +165,7 @@ router.get("/top/:limit", async (req, res) => {
 //Endpoint 12
 router.get("/ratings/:order", async (req, res) => {
 	try {
-		const page = req.query.page || 0 ;
+		const page = req.query.page || 0;
 		const order = req.params.order == "asc" ? 1 : -1;
 
 		let results = await db.collection("users").aggregate([
@@ -279,6 +279,19 @@ router.get('/year/:year', async (req, res) => {
 			{
 				$sort: {
 					_id: 1
+				}
+			},
+			{
+				$lookup: {
+					from: "books",
+					localField: "_id",
+					foreignField: "_id",
+					as: "livro"
+				}
+			},
+			{
+				$project: {
+					"livro.title": 1, "livro._id": 1, _id: 0
 				}
 			}
 		]).skip(page * usersPerPage).limit(usersPerPage).toArray();
