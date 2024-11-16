@@ -1,6 +1,7 @@
 import express from "express";
 import db from "../db/config.js";
 const router = express.Router();
+import { verifyID } from './books.js'; // para ir buscar a funcao desenvolvida nos books
 
 
 function getCoords(point) {
@@ -12,50 +13,68 @@ function getCoords(point) {
 	return intCoords;
 }
 
-
-
-//  1. Adicionar livros da lista (books.json) a cada livraria.
-router.post('/:id', async (req, res) => {
-	const bookIds = Array.isArray(req.body) ? req.body : [req.body]; // Verifica se é um array ou um único ID
-
+// 1. Adicionar livro à livraria
+router.post('/:id/:bookId', async (req, res) => {
 	try {
-		const books = await db.collection("books").find({ _id: { $in: bookIds } }).toArray();
+  
+	  // Verifica se a livraria existe
+	  const livraria = await db.collection("livrarias").findOne({ _id: parseInt(req.params.id) });
+	  if (!livraria) {
+		return res.send({ message: "Livraria não encontrada" }).status(404);
+	  }
+  
+	  // Verifica se o livro já está na livraria
+	  const bookChecker = await db.collection("livrarias").aggregate([
+		{ $match: { _id: parseInt(req.params.id) } },
+		{ $unwind: "$books" }, 
+		{ $match: { "books._id": verifyID(req.params.bookId) } }
+	  ]).toArray();
+  
+	  if (bookChecker.length > 0) {
+		return res.send({ message: "O livro já está na livraria" }).status(400);
+	  }
 
-		if (books.length === 0) {
-			return res.send({ message: "Nenhum livro encontrado" }).status(404);
-		}
+	  // Adiciona o livro à livraria se não estiver presente
+	  const result = await db.collection("livrarias").updateOne(
+		{ _id: parseInt(req.params.id) },
+		{ $push: { books: await db.collection("books").findOne({ _id: verifyID(req.params.bookId)}) } }  // Adiciona o livro à lista
+	  );
+ 
+	  res.send({ message: "Livro adicionado à livraria com sucesso" }).status(201);
 
-		const result = await db.collection("livrarias").updateOne(
-			{ _id: parseInt(req.params.id) },
-			{ $push: { books: { $each: books } } }
-		);
-
-		if (result.matchedCount === 0) {
-			return res.send({ message: "Livraria não encontrada" }).status(404);
-		}
-
-		res.send({ message: "Livros adicionados à livraria com sucesso" }).status(201);
 	} catch (error) {
-		res.send({ message: "Erro ao adicionar livros", error: error.message }).status(500);
+
+	  res.send({ message: "Erro ao adicionar livro", error: error.message }).status(500);
 	}
-});
+  });
+  
+
+  
   
 // 2. Consultar livros numa livraria específica com paginação
 router.get('/:id', async (req, res) => {
 	try {
+
 		const page = parseInt(req.query.page) || 1;
 		const limit = 20;
 		const skip = (page - 1) * limit;
-	  
-	  const livraria = await db.collection("livrarias").aggregate([
+		
+		const livraria = await db.collection("livrarias").aggregate([
+
 		{ $match: { _id: parseInt(req.params.id) } },
+
 		{ $unwind: "$books" },
+
   		{ $skip: skip },
+
 		{ $limit: limit },
+
 		{ $group: { 
+			
 			_id: "$_id", 
 			books: { $push: "$books" }
 		  } 
+
 		}
 	  ]).toArray();
   
@@ -63,12 +82,11 @@ router.get('/:id', async (req, res) => {
 	  if (livraria.length === 0) {
 		return res.status(404).send({ message: "Livraria vazia / Livraria não encontrada" });
 	  }
-  
-	  // Retorna os livros paginados para a livraria
-	  res.status(200).send({page, limit, livraria});
+
+	  res.send(livraria[0]).status(200);
 	  
 	} catch (error) {
-	  res.status(500).send({ message: "Erro ao consultar livros", error: error.message });
+	  res.send({ message: "Erro ao consultar livros", error: error.message }).status(500);
 	}
   });
   

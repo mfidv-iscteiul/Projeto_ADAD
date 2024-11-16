@@ -23,7 +23,6 @@ router.get('/', async (req, res) => {
 	const skip = (safePage - 1) * limit;
 
 	try {
-		console.log("entrei no endpoint 1")
 		const books = (await db.collection('books').find().sort({ _id: 1 }).skip(skip).limit(limit).toArray());
 		res.send({ page, limit, books }).status(200);
 	} catch (error) {
@@ -33,12 +32,18 @@ router.get('/', async (req, res) => {
 
 // 3. POST /books - Adicionar 1 ou vários livros
 router.post('/', async (req, res) => {
+
 	const books = Array.isArray(req.body) ? req.body : [req.body];
+
 	try {
+
 		const result = await db.collection("books").insertMany(books);
 		if (result.insertedCount === 0) return res.send({ message: "Nenhum livro adicionado" }).status(404);
-		res.send({ message: "Livros adicionados com sucesso", insertedCount: result.insertedCount }).status(201);
+
+		res.send({ message: "Livros adicionados com sucesso" }).status(201);
+
 	} catch (error) {
+
 		res.send({ message: "Erro ao adicionar livro" }).status(500);
 	}
 });
@@ -46,12 +51,12 @@ router.post('/', async (req, res) => {
 // 5. GET /books/:id - Buscar livro por _id com média de score e comentários
 router.get('/id/:id', async (req, res) => {
 	try {
-		console.log("entrei no endpoint 5")
+
 		let bookId = verifyID(req.params.id);
-		console.log(bookId)
-		// Buscar o livro com base no ID
+
 		const book = await db.collection("books").aggregate([
 			{ $match: { _id: bookId } },
+
 			{
 				$lookup: {
 					from: "comments",
@@ -60,15 +65,20 @@ router.get('/id/:id', async (req, res) => {
 					as: "comments"
 				}
 			},
+
 		]).toArray();
 
 		if (book.length === 0) return res.send({ message: "Livro não encontrado" }).status(404);
 
 		// Calcular a média de scores dos reviews dos users
 		const scoreData = await db.collection("users").aggregate([
+
 			{ $unwind: "$reviews" },
+
 			{ $match: { "reviews.book_id": bookId } },
+
 			{ $group: { _id: null, averageScore: { $avg: "$reviews.score" } } }
+
 		]).toArray();
 
 		// Adicionar a média de score ao livro
@@ -83,15 +93,19 @@ router.get('/id/:id', async (req, res) => {
 
 // 7. DELETE /books/:id - Remover livro pelo _id
 router.delete('/:id', async (req, res) => {
+
 	try {
+
 		let bookId = verifyID(req.params.id);
 
 		const result = await db.collection("books").deleteOne({ _id: bookId });
+
 		if (result.deletedCount === 0) {
 			return res.send({ message: "Livro não encontrado" }).status(404);
 		}
 
 		return res.send({ message: "Livro removido com sucesso" }).status(200);
+		
 	} catch (error) {
 		res.send({ message: "Erro ao remover livro", error: error.message }).status(500);
 	}
