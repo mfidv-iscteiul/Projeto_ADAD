@@ -15,7 +15,7 @@ router.post("/", async (req, res) => {
 
     } catch (error) {
 
-        res.status(500).json({ message: "Erro ao adicionar usuários" });
+        res.status(500).json({ message: "Erro ao adicionar comentários" });
     }
 });
 
@@ -27,12 +27,12 @@ router.delete("/:id", async (req, res) => {
     const commentID = req.params.id;
     try {
         if (isNaN(commentID)) { //para verificar se é um objectId
-            console.log("entrei no objeto");
             const result = await db.collection("comments").deleteOne(
-                { _id: new ObjectId(commentID) });
+                { 
+                _id: new ObjectId(commentID)
+             });
 
             if (result.deletedCount === 1) {
-                console.log("entrei no if");
                 res.send(result).status(200);
             }
             else {   // comentario nao encontrado
@@ -42,12 +42,14 @@ router.delete("/:id", async (req, res) => {
         }
         else {//se o Id for um numero
             const result = await db.collection("comments").deleteOne(
-                { _id: parseInt(commentID) });
+                { 
+                _id: parseInt(commentID) 
+            });
 
             if (result.deletedCount === 1) { // comentario removido com sucesso
                 res.send(result).status(200);
             } else {
-                // Usuário não encontrado
+                // Comentário não encontrado
                 res.status(404).json({ message: "comentario não encontrado." });
             }
         }

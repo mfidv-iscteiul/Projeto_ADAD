@@ -165,8 +165,9 @@ router.get('/lib/:lat/:lng', async (req, res) => {
 
 
 // 6. Verificar se um determinado usuário (Ponto) se encontra dentro da feira do livro
-//Coordenadas dentro do parque para teste: -9.155644342145884,38.72749043040882
+//Coordenadas dentro da feira do livro para teste: -9.153229526069271,38.72904762938384
 //Coordenadas fora do parque para teste: -9.155644342145884,38.72749043040882
+//Coordenadas dentro da feira semanal para teste: -9.1457748,38.7353616
 
  router.get('/feiralivro/contains/:coords', async (req, res) => {
     try {
@@ -176,6 +177,8 @@ router.get('/lib/:lat/:lng', async (req, res) => {
 
         // Consultar a feira do livro usando o operador $geoIntersects
         const feiraDoLivro = await db.collection("livrarias").find({
+			//_id: 15 da feira do livro
+			_id: 15,
             geometry: {
                 $geoIntersects: {
                     $geometry: {
@@ -194,7 +197,7 @@ router.get('/lib/:lat/:lng', async (req, res) => {
         }
 
     } catch (error) {
-      res.send({ message: "Erro ao consultar livrarias", error: error.message }).status(500);
+      res.send({ message: "Erro", error: error.message }).status(500);
     }
   })
 

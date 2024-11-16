@@ -412,7 +412,7 @@ router.get('/:price/:category/:author', async (req, res) => {
 
 		res.send(results).status(200);
 	} catch (error) {
-		res.send({ message: "Erro " }).status(500);
+		res.send({ message: "Erro na filtração" }).status(500);
 	}
 })
 
