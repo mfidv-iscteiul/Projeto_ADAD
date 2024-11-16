@@ -31,7 +31,7 @@ router.post('/:id/:bookId', async (req, res) => {
 	  ]).toArray();
   
 	  if (bookChecker.length > 0) {
-		return res.send({ message: "O livro já está na livraria" }).status(400);
+		return res.send({ message: "Livro já está na livraria" }).status(400);
 	  }
 
 	  // Adiciona o livro à livraria se não estiver presente
@@ -44,7 +44,7 @@ router.post('/:id/:bookId', async (req, res) => {
 
 	} catch (error) {
 
-	  res.send({ message: "Erro ao adicionar livro", error: error.message }).status(500);
+	  res.send({ message: "Erro ao adicionar livro"}).status(500);
 	}
   });
   
