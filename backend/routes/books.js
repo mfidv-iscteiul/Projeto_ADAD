@@ -10,7 +10,7 @@ export function verifyID(id) {
 		aux = parseInt(id);
 	} else if (ObjectId.isValid(id)) {
 		aux =  new ObjectId(id);
-		console.log("entrei aqui")
+		
 	}  
 	return aux;
 }
@@ -325,6 +325,7 @@ router.get('/comments', async (req, res) => {
 	try {
 		const page = req.query.page || 1; // vai buscar a pagina que podera estar numa query do tipo ?page=1
 		const usersPerPage = 20;
+		const safePage = page > 0 ? page : 1; 
 		let results = await db.collection("comments").aggregate([
 			//agrupa os livros por id e conta os comentários que cada um tem
 			{
