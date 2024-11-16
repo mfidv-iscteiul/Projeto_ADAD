@@ -1,5 +1,6 @@
 import express from "express";
 import db from "../db/config.js";
+import { ObjectId } from "mongodb";
 const router = express.Router();
 
 //Função auxiliar para verificar se o id é um Integer ou um ObjectID
@@ -8,10 +9,9 @@ export function verifyID(id) {
 	if (!isNaN(id)) {
 		aux = parseInt(id);
 	} else if (ObjectId.isValid(id)) {
-		aux = new ObjectId(id);
-	} else {
-		return res.send({ message: "ID inválido" }).status(400);
-	}
+		aux =  new ObjectId(id);
+		console.log("entrei aqui")
+	}  
 	return aux;
 }
 
