@@ -193,7 +193,7 @@ router.get('/lib/:lat/:lng', async (req, res) => {
         res.send({ message: "O usuário está dentro da área da feira do livro." }).status(200);
 
         }else{
-        res.send({ message: "O usuário não está dentro da área da feira do livro." }).status(404);
+        res.send({ message: "O usuário não está dentro da área da feira do livro." }).status(200);
         }
 
     } catch (error) {
