@@ -14,7 +14,7 @@ export function verifyID(id) {
 	}  
 	return aux;
 }
-
+  
 // 1. GET /books - Lista de livros com paginação
 router.get('/', async (req, res) => {
 	const page = parseInt(req.query.page) || 1;
@@ -23,8 +23,13 @@ router.get('/', async (req, res) => {
 	const skip = (safePage - 1) * limit;
 
 	try {
+		const totalBooks = await db.collection('books').countDocuments()
+		const maxPages = Math.ceil(totalBooks / limit)
+		if (page > maxPages) {return res.send( {message: "Esta página não existe"}).status(404)};
+		
 		const books = (await db.collection('books').find().sort({ _id: 1 }).skip(skip).limit(limit).toArray());
-		res.send({ page, limit, books }).status(200);
+		res.send({ page, limit, maxPages, books }).status(200);
+
 	} catch (error) {
 		res.send({ message: "Erro ao buscar livros" }).status(500);
 	}

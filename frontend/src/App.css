@@ -78,3 +78,18 @@ header.masthead .overlay {
 .jumbotro {
   background-color: #e9ecef;
 }
+
+.pagination-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.pagination-buttons .btn {
+  margin: 0 10px;
+}
+
+.pagination-buttons span {
+  margin: 0 10px;
+}
