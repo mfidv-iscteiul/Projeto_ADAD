@@ -5,12 +5,8 @@ const router = express.Router();
 import { verifyID } from './books.js'; // para ir buscar a funcao desenvolvida nos books
 
 
-function doPagination(array){
-  if(array.length>20){
-    return true;
-  }
-return false;
-
+export function numpages(documents){
+	return Math.ceil(documents/20);
 }
 
 
@@ -21,13 +17,15 @@ router.get("/", async(req, res) => {
     const safePage = page > 0 ? page : 1; 
     const usersPerPage=20;
     try {
-
+      const maxPages= numpages(await db.collection('users').countDocuments());
+      if (page > maxPages) {return res.send( {message: "Esta página não existe"}).status(404)};
     let results = await db.collection("users").find({})
-     .skip((safePage-1)* usersPerPage)
+    .sort({_id : 1})
+    .skip((safePage-1)* usersPerPage)
     .limit(usersPerPage) 
     .toArray();
 //console.log(results[0])
-    res.send(results).status(200);
+    res.send({ page, maxPages,  results}).status(200);
     }
      catch (error) {
       res.status(500).json({ message: "Erro a listar os users" });

@@ -1,14 +1,17 @@
 import React, {useState, useEffect} from "react";
 import CardGroup from 'react-bootstrap/CardGroup';
 import Row from 'react-bootstrap/Row';
+import Button from "react-bootstrap/Button";
 import UserCard from "../components/UserCard";
 
 export default function App() {
   let [users, setUsers] = useState([]);
+  let [page, setPage] = useState([]); // Estado para a página atual
+  let [maxPages1, setMaxPages1] = useState([]); // Estado para o número máximo de páginas
 
-  const getUsers = async () => {
+  const getUsers = async (page) => {
     try {
-      const response = await fetch('http://localhost:3000/users', {
+      const response = await fetch(`http://localhost:3000/users?page=${page}`, {
         method: 'GET',
         headers: {
         'Content-Type': 'application/json'
@@ -17,7 +20,9 @@ export default function App() {
       
       const data = await response.json();
       console.log(data)
-      setUsers(data);
+      setUsers(data.results);
+      setPage(data.page);
+      setMaxPages1(data.maxPages);
 
     } catch (error) {
       console.error('Error:', error);
@@ -25,8 +30,12 @@ export default function App() {
   }
 
   useEffect(() => {
-    getUsers();
-  }, []);
+    getUsers(page);
+  }, [page]);
+
+  function handleClick(newPage) {
+    setPage(newPage);
+  }
 
   return (
     <div className="container pt-5 pb-5">
@@ -43,6 +52,27 @@ export default function App() {
             })}
             </Row>
         </CardGroup>
+        <div className="pagination-buttons mt-3 d-flex justify-content-center">
+        {/* Botão para página anterior */}
+        
+        <Button
+          onClick={() => handleClick(Math.max(page - 1, 1))}
+          disabled={page === 1} // Desativado na primeira página
+        >
+          Previous
+        
+        </Button>
+        <span className="mx-3 ">Page : {page}/{maxPages1}</span>
+        {/* Botão para próxima página */}
+        <Button
+          onClick={() => handleClick(page + 1)}
+          disabled={page === maxPages1} // Desativado se não houver mais itens
+        >
+
+          Next
+        </Button>
+
+      </div>
     </div>
-  )
+  );
 }

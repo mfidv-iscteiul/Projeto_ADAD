@@ -14,6 +14,8 @@ export function verifyID(id) {
 	}  
 	return aux;
 }
+
+
   
 // 1. GET /books - Lista de livros com paginação
 router.get('/', async (req, res) => {

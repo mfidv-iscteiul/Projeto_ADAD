@@ -15,6 +15,7 @@ import Navigation from "./components/Navigation";
 import Home from "./pages/Home";
 import Books from "./pages/Books";
 import Users from "./pages/Users";
+import User from "./pages/User";
 import Book from "./pages/Book";
 import Footer from './components/Footer';
 
@@ -39,6 +40,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/books" element={<Books />} />
           <Route path="/users" element={<Users />} />
+          <Route path="/users/:id" element={<User />} />
           <Route path="/book/:id" element={<Book />} />
         </Routes>
         <Footer />

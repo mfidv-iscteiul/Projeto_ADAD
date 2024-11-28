@@ -7,9 +7,13 @@ function UserCard(props) {
       <Card.Body>
         <Card.Title>{props.title}</Card.Title>
         <Card.Text>
-          _id: {props._id}
+        <p> _id: {props._id}</p>
+          <p> Nome: {props.first_name } {props.last_name}</p>
+          <p> Profissão: {props.job } </p>
+          
+         
         </Card.Text>
-        <Button href={"/user/" + props._id} variant="outline-primary">Open User</Button>
+        <Button href={"/users/" + props._id} variant="outline-primary">Open User</Button>
       </Card.Body>
     </Card>
   );
