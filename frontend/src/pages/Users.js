@@ -7,7 +7,7 @@ import UserCard from "../components/UserCard";
 export default function App() {
   let [users, setUsers] = useState([]);
   let [page, setPage] = useState([]); // Estado para a página atual
-  let [maxPages1, setMaxPages1] = useState([]); // Estado para o número máximo de páginas
+  let [maxPages, setMaxPages] = useState([]); // Estado para o número máximo de páginas
 
   const getUsers = async (page) => {
     try {
@@ -22,7 +22,7 @@ export default function App() {
       console.log(data)
       setUsers(data.results);
       setPage(data.page);
-      setMaxPages1(data.maxPages);
+      setMaxPages(data.maxPages);
 
     } catch (error) {
       console.error('Error:', error);
@@ -62,11 +62,11 @@ export default function App() {
           Previous
         
         </Button>
-        <span className="mx-3 ">Page : {page}/{maxPages1}</span>
+        <span className="mx-3 ">Page : {page}/{maxPages}</span>
         {/* Botão para próxima página */}
         <Button
           onClick={() => handleClick(page + 1)}
-          disabled={page === maxPages1} // Desativado se não houver mais itens
+          disabled={page === maxPages} // Desativado se não houver mais itens
         >
 
           Next

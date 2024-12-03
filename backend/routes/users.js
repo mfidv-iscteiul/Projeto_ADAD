@@ -3,25 +3,33 @@ import db from "../db/config.js";
 import { ObjectId } from "mongodb";
 const router = express.Router();
 import { verifyID } from './books.js'; // para ir buscar a funcao desenvolvida nos books
+ const usersPerPage=20;
 
-
-export function numpages(documents){
+export function Numpages(documents){
 	return Math.ceil(documents/20);
+}
+export function GetPage(page){
+
+if(parseInt(page)&& page > 0){
+    return parseInt(page);
+}
+return 1;
+
 }
 
 
 //Endpoint 2
 
 router.get("/", async(req, res) => {
-    const page = parseInt(req.query.page) || 1 ; 
-    const safePage = page > 0 ? page : 1; 
-    const usersPerPage=20;
+   /*  const page = parseInt(req.query.page) || 1 ; 
+    const safePage = page > 0 ? page : 1;  */
+    const page = GetPage(req.query.page)
     try {
-      const maxPages= numpages(await db.collection('users').countDocuments());
+      const maxPages= Numpages(await db.collection('users').countDocuments());
       if (page > maxPages) {return res.send( {message: "Esta página não existe"}).status(404)};
     let results = await db.collection("users").find({})
     .sort({_id : 1})
-    .skip((safePage-1)* usersPerPage)
+    .skip((page-1)* usersPerPage)
     .limit(usersPerPage) 
     .toArray();
 //console.log(results[0])
