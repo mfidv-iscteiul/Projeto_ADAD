@@ -22,7 +22,7 @@ export default function App() {
 
       const data = await response.json();
 
-      setBooks(data.books);
+      setBooks(data.limitedResults);
       setPage(data.page);
       setMaxPages(data.maxPages);
 
