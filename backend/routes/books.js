@@ -3,8 +3,23 @@ import db from "../db/config.js";
 import { ObjectId } from "mongodb";
 const router = express.Router();
 
+const documentsPerPage=20;
+
+export function Pagination(results, page){
+ 
+  let maxPages= Math.ceil(results.length/documentsPerPage);
+
+  if(!parseInt(page)|| page <= 0){
+    page=1;
+  }
+
+  let limitedResults = results.slice(page * documentsPerPage - documentsPerPage, page * documentsPerPage);
+ 
+  return {limitedResults, maxPages, page};
+}
+
 //Função auxiliar para verificar se o id é um Integer ou um ObjectID
-export function verifyID(id) {
+export function VerifyID(id) {
 	let aux;
 	if (!isNaN(id)) {
 		aux = parseInt(id);
@@ -14,8 +29,6 @@ export function verifyID(id) {
 	}  
 	return aux;
 }
-
-
   
 // 1. GET /books - Lista de livros com paginação
 router.get('/', async (req, res) => {
@@ -59,7 +72,7 @@ router.post('/', async (req, res) => {
 router.get('/id/:id', async (req, res) => {
 	try {
 
-		let bookId = verifyID(req.params.id);
+		let bookId = VerifyID(req.params.id);
 
 		const book = await db.collection("books").aggregate([
 			{ $match: { _id: bookId } },
@@ -103,7 +116,7 @@ router.delete('/:id', async (req, res) => {
 
 	try {
 
-		let bookId = verifyID(req.params.id);
+		let bookId = VerifyID(req.params.id);
 
 		const result = await db.collection("books").deleteOne({ _id: bookId });
 
@@ -122,7 +135,7 @@ router.delete('/:id', async (req, res) => {
 //Endpoint 9
 router.put("/:id", async (req, res) => {
 	try {
-		const bookID = verifyID(req.params.id);
+		const bookID = VerifyID(req.params.id);
 
 		let results = await db.collection("books").updateOne(
 			{ _id: bookID },

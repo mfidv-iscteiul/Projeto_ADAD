@@ -20,7 +20,7 @@ export default function App() {
       
       const data = await response.json();
       console.log(data)
-      setUsers(data.results);
+      setUsers(data.limitedResults);
       setPage(data.page);
       setMaxPages(data.maxPages);
 

@@ -1,42 +1,30 @@
 import express from "express";
 import db from "../db/config.js";
-import { ObjectId } from "mongodb";
 const router = express.Router();
-import { verifyID } from './books.js'; // para ir buscar a funcao desenvolvida nos books
- const usersPerPage=20;
 
-export function Numpages(documents){
-	return Math.ceil(documents/20);
-}
-export function GetPage(page){
-
-if(parseInt(page)&& page > 0){
-    return parseInt(page);
-}
-return 1;
-
-}
-
+import { Pagination } from './books.js'; // para ir buscar a funcao de paginação nos books
+import { VerifyID } from './books.js'; // para ir buscar a funcao desenvolvida nos books
 
 //Endpoint 2
 
 router.get("/", async(req, res) => {
-   /*  const page = parseInt(req.query.page) || 1 ; 
-    const safePage = page > 0 ? page : 1;  */
-    const page = GetPage(req.query.page)
+
     try {
-      const maxPages= Numpages(await db.collection('users').countDocuments());
-      if (page > maxPages) {return res.send( {message: "Esta página não existe"}).status(404)};
-    let results = await db.collection("users").find({})
-    .sort({_id : 1})
-    .skip((page-1)* usersPerPage)
-    .limit(usersPerPage) 
-    .toArray();
-//console.log(results[0])
-    res.send({ page, maxPages,  results}).status(200);
-    }
-     catch (error) {
+      
+      let results = await db.collection("users").find({})
+      .sort({_id : 1})
+      .toArray();
+
+      let data = Pagination(results, parseInt(req.query.page));
+
+      if (req.query.page > data.maxPages) {return res.send( {message: "Esta página não existe"}).status(404)};
+
+      res.send(data).status(200);
+
+    } catch (error) {
+
       res.status(500).json({ message: "Erro a listar os users" });
+
     }
 } )
 
@@ -79,7 +67,7 @@ router.post("/", async (req, res) => {
   router.get("/:id", async(req, res) => {
     try {
     
-      const userID = verifyID(req.params.id);
+      const userID = VerifyID(req.params.id);
     //const userID = isNaN(req.params.id) ? new ObjectId(req.params.id) : parseInt(req.params.id);
 
    const result = await db.collection("users").aggregate([
@@ -123,7 +111,7 @@ router.post("/", async (req, res) => {
 
   //Endpoint 8
 router.delete("/:id", async (req, res) => {
-  const userID = verifyID(req.params.id);
+  const userID = VerifyID(req.params.id);
   //const userID = isNaN(req.params.id) ? new ObjectId(req.params.id) : parseInt(req.params.id);
   try {
    
@@ -161,7 +149,7 @@ router.put("/:id", async (req, res) => {
       res.send({message: "User não encontrado"}).status(404);
     }
 
-    const userID = verifyID(req.params.id);
+    const userID = VerifyID(req.params.id);
 		let newReviews = req.body.reviews;
 
     if(newReviews.length > 0){

@@ -1,7 +1,9 @@
 import express from "express";
 import db from "../db/config.js";
 const router = express.Router();
-import { verifyID } from './books.js'; // para ir buscar a funcao desenvolvida nos books
+
+import { Pagination } from './books.js'; // para ir buscar a funcao de paginação nos booksimport { Pagination } from './books.js'; // para ir buscar a funcao de paginação nos books
+import { VerifyID } from './books.js'; // para ir buscar a funcao desenvolvida nos books
 
 
 function getCoords(point) {
@@ -27,7 +29,7 @@ router.post('/:id/:bookId', async (req, res) => {
 	  const bookChecker = await db.collection("livrarias").aggregate([
 		{ $match: { _id: parseInt(req.params.id) } },
 		{ $unwind: "$books" }, 
-		{ $match: { "books._id": verifyID(req.params.bookId) } }
+		{ $match: { "books._id": VerifyID(req.params.bookId) } }
 	  ]).toArray();
   
 	  if (bookChecker.length > 0) {
@@ -37,7 +39,7 @@ router.post('/:id/:bookId', async (req, res) => {
 	  // Adiciona o livro à livraria se não estiver presente
 	  const result = await db.collection("livrarias").updateOne(
 		{ _id: parseInt(req.params.id) },
-		{ $push: { books: await db.collection("books").findOne({ _id: verifyID(req.params.bookId)}) } }  // Adiciona o livro à lista
+		{ $push: { books: await db.collection("books").findOne({ _id: VerifyID(req.params.bookId)}) } }  // Adiciona o livro à lista
 	  );
  
 	  res.send({ message: "Livro adicionado à livraria com sucesso" }).status(201);
