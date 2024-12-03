@@ -3,19 +3,21 @@ import db from "../db/config.js";
 import { ObjectId } from "mongodb";
 const router = express.Router();
 
-const documentsPerPage=20;
+/* --------  Funções auxiliares  -------- */
 
-export function Pagination(results, page){
- 
-  let maxPages= Math.ceil(results.length/documentsPerPage);
+const documentsPerPage = 20;
 
-  if(!parseInt(page)|| page <= 0){
-    page=1;
-  }
+export function Pagination(results, page) {
 
-  let limitedResults = results.slice(page * documentsPerPage - documentsPerPage, page * documentsPerPage);
- 
-  return {limitedResults, maxPages, page};
+	let maxPages = Math.ceil(results.length / documentsPerPage);
+
+	if (!parseInt(page) || page <= 0) {
+		page = 1;
+	}
+
+	let limitedResults = results.slice(page * documentsPerPage - documentsPerPage, page * documentsPerPage);
+
+	return { limitedResults, maxPages, page };
 }
 
 //Função auxiliar para verificar se o id é um Integer ou um ObjectID
@@ -24,29 +26,33 @@ export function VerifyID(id) {
 	if (!isNaN(id)) {
 		aux = parseInt(id);
 	} else if (ObjectId.isValid(id)) {
-		aux =  new ObjectId(id);
-		
-	}  
+		aux = new ObjectId(id);
+
+	}
 	return aux;
 }
-  
+
+/* --------  FIM Funções auxiliares  -------- */
+
 // 1. GET /books - Lista de livros com paginação
 router.get('/', async (req, res) => {
-	const page = parseInt(req.query.page) || 1;
-	const safePage = page > 0 ? page : 1; 
-	const limit = parseInt(req.query.limit) || 20;
-	const skip = (safePage - 1) * limit;
 
 	try {
-		const totalBooks = await db.collection('books').countDocuments()
-		const maxPages = Math.ceil(totalBooks / limit)
-		if (page > maxPages) {return res.send( {message: "Esta página não existe"}).status(404)};
-		
-		const books = (await db.collection('books').find().sort({ _id: 1 }).skip(skip).limit(limit).toArray());
-		res.send({ page, limit, maxPages, books }).status(200);
+
+		let books = (await db.collection('books').find()
+			.sort({ _id: 1 })
+			.toArray());
+
+		let data = Pagination(books, parseInt(req.query.page));
+
+		if (req.query.page > data.maxPages) { return res.send({ message: "Esta página não existe" }).status(404) };
+
+		res.send(data).status(200);
 
 	} catch (error) {
+
 		res.send({ message: "Erro ao buscar livros" }).status(500);
+
 	}
 });
 
@@ -125,7 +131,7 @@ router.delete('/:id', async (req, res) => {
 		}
 
 		return res.send({ message: "Livro removido com sucesso" }).status(200);
-		
+
 	} catch (error) {
 		res.send({ message: "Erro ao remover livro", error: error.message }).status(500);
 	}
@@ -157,8 +163,7 @@ router.put("/:id", async (req, res) => {
 //Endpoint 11
 router.get("/top/:limit", async (req, res) => {
 	try {
-		const page = req.query.page || 1;
-		const safePage = page > 0 ? page : 1; 
+
 		let results = await db.collection("users").aggregate([
 			{
 				$unwind:
@@ -189,9 +194,13 @@ router.get("/top/:limit", async (req, res) => {
 					"livro._id": 0
 				}
 			}
-		]).limit(parseInt(req.params.limit)).skip((safePage-1) * 20).limit(20).toArray();
+		]).limit(parseInt(req.params.limit)).toArray();
 
-		res.send(results).status(200);
+		let data = Pagination(results, parseInt(req.query.page));
+
+		if (req.query.page > data.maxPages) { return res.send({ message: "Esta página não existe" }).status(404) };
+
+		res.send(data).status(200);
 
 	} catch (error) {
 		res.send({ message: "Erro ao buscar utilizadores e livros." }).status(500);
@@ -201,8 +210,7 @@ router.get("/top/:limit", async (req, res) => {
 //Endpoint 12
 router.get("/ratings/:order", async (req, res) => {
 	try {
-		const page = req.query.page || 1;
-		const safePage = page > 0 ? page : 1; 
+
 		const order = req.params.order == "asc" ? 1 : -1;
 
 		let results = await db.collection("users").aggregate([
@@ -235,21 +243,25 @@ router.get("/ratings/:order", async (req, res) => {
 					"livro._id": 0
 				}
 			}
-		]).skip((safePage-1) * 20).limit(20).toArray();
+		]).toArray();
 
-		res.send(results).status(200);
+		let data = Pagination(results, parseInt(req.query.page));
+
+		if (req.query.page > data.maxPages) { return res.send({ message: "Esta página não existe" }).status(404) };
+
+		res.send(data).status(200);
 
 	} catch (error) {
+
 		res.send({ message: "Erro ao buscar utilizadores e livros." }).status(500);
+
 	}
 })
 
 //Endpoint 13
 router.get('/star', async (req, res) => {
 	try {
-		const page = req.query.page || 1; // vai buscar a pagina que podera estar numa query do tipo ?page=1
-		const safePage = page > 0 ? page : 1; 
-		const usersPerPage = 20;
+
 		let results = await db.collection("users").aggregate([
 			//permite aceder ao array reviews
 			{ $unwind: "$reviews" },
@@ -281,31 +293,38 @@ router.get('/star', async (req, res) => {
 				}
 			},
 			{ $project: { _id: 0 } }
-		]).skip((safePage-1)* usersPerPage).limit(usersPerPage).toArray();
-		res.send(results).status(200);
+		]).toArray();
+
+		let data = Pagination(results, parseInt(req.query.page));
+
+		if (req.query.page > data.maxPages) { return res.send({ message: "Esta página não existe" }).status(404) };
+
+		res.send(data).status(200);
+
 	} catch (error) {
+
 		res.send({ message: "Erro ao apresentar as informções do Livro com 5 estrelas" }).status(500);
+
 	}
 })
 
 //Endpoint 14
 router.get('/year/:year', async (req, res) => {
 	try {
-		const page = req.query.page || 1; // vai buscar a pagina que podera estar numa query do tipo ?page=1
-		const safePage = page > 0 ? page : 1; 
-		const usersPerPage = 20;
+
 		//cria as os timestamps do ano pedido e do ano seguinte
 		const aux = parseInt(req.params.year) + 1
-		const timestamp1 = new Date(req.params.year).getTime().toString();
-		const timestamp2 = new Date(aux.toString()).getTime().toString();
+		const timestampInferior = new Date(req.params.year).getTime().toString();
+		const timestampSuperior = new Date(aux.toString()).getTime().toString();
+
 		let results = await db.collection("users").aggregate([
 			{ $unwind: "$reviews" },
 			//verifica se o timestamp de uma review pertence ao ano pedido
 			{
 				$match: {
 					$and: [
-						{ "reviews.review_date": { $gte: timestamp1 } },
-						{ "reviews.review_date": { $lt: timestamp2 } }
+						{ "reviews.review_date": { $gte: timestampInferior } },
+						{ "reviews.review_date": { $lt: timestampSuperior } }
 					]
 				}
 			},
@@ -333,19 +352,25 @@ router.get('/year/:year', async (req, res) => {
 					"livro.title": 1, "livro._id": 1, _id: 0
 				}
 			}
-		]).skip((safePage-1) * usersPerPage).limit(usersPerPage).toArray();
-		res.send(results).status(200);
+		]).toArray();
+
+		let data = Pagination(results, parseInt(req.query.page));
+
+		if (req.query.page > data.maxPages) { return res.send({ message: "Esta página não existe" }).status(404) };
+
+		res.send(data).status(200);
+
 	} catch (error) {
+
 		res.send({ message: "Erro ao apresentar as avaliações." }).status(500);
+
 	}
 })
 
 //Endpoint 15
 router.get('/comments', async (req, res) => {
 	try {
-		const page = req.query.page || 1; // vai buscar a pagina que podera estar numa query do tipo ?page=1
-		const usersPerPage = 20;
-		const safePage = page > 0 ? page : 1; 
+
 		let results = await db.collection("comments").aggregate([
 			//agrupa os livros por id e conta os comentários que cada um tem
 			{
@@ -374,19 +399,25 @@ router.get('/comments', async (req, res) => {
 					_id: 0
 				}
 			}
-		]).skip((safePage-1) * usersPerPage).limit(usersPerPage).toArray();
-		res.send(results).status(200);
+		]).toArray();
+
+		let data = Pagination(results, parseInt(req.query.page));
+
+		if (req.query.page > data.maxPages) { return res.send({ message: "Esta página não existe" }).status(404) };
+
+		res.send(data).status(200);
+
 	} catch (error) {
+
 		res.send({ message: "Erro ao apresentar os comentários." }).status(500);
+
 	}
 })
 
 //Endpoint 16
 router.get('/job', async (req, res) => {
 	try {
-		const page = req.query.page || 1; // vai buscar a pagina que podera estar numa query do tipo ?page=1
-		const safePage = page > 0 ? page : 1; 
-		const usersPerPage = 20;
+
 		let results = await db.collection("users").aggregate([
 			{
 				$unwind: "$reviews"
@@ -404,18 +435,24 @@ router.get('/job', async (req, res) => {
 					number_of_reviews: -1
 				}
 			}
-		]).skip((safePage-1) * usersPerPage).limit(usersPerPage).toArray();
-		res.send(results).status(200);
+		]).toArray();
+		
+		let data = Pagination(results, parseInt(req.query.page));
+
+		if (req.query.page > data.maxPages) { return res.send({ message: "Esta página não existe" }).status(404) };
+
+		res.send(data).status(200);
+
 	} catch (error) {
+
 		res.send({ message: "Erro ao apresentar o número de avaliações." }).status(500);
+
 	}
 })
 
 //Endpoint 17 colocar na documentação que é obrigatório colocar autor, ou então, posso desenvolver, caso não seja passado um autor
 router.get('/:price/:category/:author', async (req, res) => {
 	try {
-
-
 
 		let results = await db.collection("books").aggregate([
 
@@ -441,13 +478,14 @@ router.get('/:price/:category/:author', async (req, res) => {
 				}
 			},
 
-
-
 		]).toArray();
 
 		res.send(results).status(200);
+
 	} catch (error) {
+
 		res.send({ message: "Erro na filtração" }).status(500);
+
 	}
 })
 

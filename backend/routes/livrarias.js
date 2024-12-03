@@ -2,7 +2,7 @@ import express from "express";
 import db from "../db/config.js";
 const router = express.Router();
 
-import { Pagination } from './books.js'; // para ir buscar a funcao de paginação nos booksimport { Pagination } from './books.js'; // para ir buscar a funcao de paginação nos books
+import { Pagination } from './books.js'; // para ir buscar a funcao de paginação nos books
 import { VerifyID } from './books.js'; // para ir buscar a funcao desenvolvida nos books
 
 
@@ -18,97 +18,92 @@ function getCoords(point) {
 // 1. Adicionar livro à livraria
 router.post('/:id/:bookId', async (req, res) => {
 	try {
-  
-	  // Verifica se a livraria existe
-	  const livraria = await db.collection("livrarias").findOne({ _id: parseInt(req.params.id) });
-	  if (!livraria) {
-		return res.send({ message: "Livraria não encontrada" }).status(404);
-	  }
-  
-	  // Verifica se o livro já está na livraria
-	  const bookChecker = await db.collection("livrarias").aggregate([
-		{ $match: { _id: parseInt(req.params.id) } },
-		{ $unwind: "$books" }, 
-		{ $match: { "books._id": VerifyID(req.params.bookId) } }
-	  ]).toArray();
-  
-	  if (bookChecker.length > 0) {
-		return res.send({ message: "Livro já está na livraria" }).status(400);
-	  }
 
-	  // Adiciona o livro à livraria se não estiver presente
-	  const result = await db.collection("livrarias").updateOne(
-		{ _id: parseInt(req.params.id) },
-		{ $push: { books: await db.collection("books").findOne({ _id: VerifyID(req.params.bookId)}) } }  // Adiciona o livro à lista
-	  );
- 
-	  res.send({ message: "Livro adicionado à livraria com sucesso" }).status(201);
+		// Verifica se a livraria existe
+		const livraria = await db.collection("livrarias").findOne({ _id: parseInt(req.params.id) });
+		if (!livraria) {
+			return res.send({ message: "Livraria não encontrada" }).status(404);
+		}
+
+		// Verifica se o livro já está na livraria
+		const bookChecker = await db.collection("livrarias").aggregate([
+			{ $match: { _id: parseInt(req.params.id) } },
+			{ $unwind: "$books" },
+			{ $match: { "books._id": VerifyID(req.params.bookId) } }
+		]).toArray();
+
+		if (bookChecker.length > 0) {
+			return res.send({ message: "Livro já está na livraria" }).status(400);
+		}
+
+		// Adiciona o livro à livraria se não estiver presente
+		const result = await db.collection("livrarias").updateOne(
+			{ _id: parseInt(req.params.id) },
+			{ $push: { books: await db.collection("books").findOne({ _id: VerifyID(req.params.bookId) }) } }  // Adiciona o livro à lista
+		);
+
+		res.send({ message: "Livro adicionado à livraria com sucesso" }).status(201);
 
 	} catch (error) {
 
-	  res.send({ message: "Erro ao adicionar livro"}).status(500);
+		res.send({ message: "Erro ao adicionar livro" }).status(500);
 	}
-  });
-  
+});
 
-  
-  
+
+
+
 // 2. Consultar livros numa livraria específica com paginação
 router.get('/:id', async (req, res) => {
 	try {
 
-		const page = parseInt(req.query.page) || 1;
-		const limit = 20;
-		const skip = (page - 1) * limit;
-		
 		const livraria = await db.collection("livrarias").aggregate([
 
-		{ $match: { _id: parseInt(req.params.id) } },
+			{ $match: { _id: parseInt(req.params.id) } },
 
-		{ $unwind: "$books" },
+			{ $unwind: "$books" },
 
-  		{ $skip: skip },
+			{
+				$group: {
 
-		{ $limit: limit },
+					_id: "$_id",
+					books: { $push: "$books" }
+				}
 
-		{ $group: { 
-			
-			_id: "$_id", 
-			books: { $push: "$books" }
-		  } 
+			}
+		]).toArray();
 
+		let data = Pagination(livraria[0].books, parseInt(req.query.page));
+
+		// Verifica se a livraria foi encontrada
+		if (livraria.length === 0) {
+			return res.status(404).send({ message: "Livraria vazia / Livraria não encontrada" });
 		}
-	  ]).toArray();
-  
-	  // Verifica se a livraria foi encontrada
-	  if (livraria.length === 0) {
-		return res.status(404).send({ message: "Livraria vazia / Livraria não encontrada" });
-	  }
 
-	  res.send(livraria[0]).status(200);
-	  
+		res.send(data).status(200);
+
 	} catch (error) {
-	  res.send({ message: "Erro ao consultar livros", error: error.message }).status(500);
+		res.send({ message: "Erro ao consultar livros", error: error.message }).status(500);
 	}
-  });
-  
+});
+
 
 // 3. Lista de livrarias perto de uma localização
 router.get('/near/:p1', async (req, res) => {
 	try {
 
-  const results= await db.collection("livrarias").find({
-    geometry:{
-      $near:{
-        $geometry:{
-          type:"Point", 
-          coordinates:[getCoords(req.params.p1)[0],getCoords(req.params.p1)[1] ],
-         
-        },
-          $maxDistance: 2000
-      }
-    }
-    
+		const results = await db.collection("livrarias").find({
+			geometry: {
+				$near: {
+					$geometry: {
+						type: "Point",
+						coordinates: [getCoords(req.params.p1)[0], getCoords(req.params.p1)[1]],
+
+					},
+					$maxDistance: 2000
+				}
+			}
+
 
 
 		}).project({
@@ -189,37 +184,37 @@ router.get('/lib/:lat/:lng', async (req, res) => {
 //Coordenadas fora do parque para teste: -9.155644342145884,38.72749043040882
 //Coordenadas dentro da feira semanal para teste: -9.1457748,38.7353616
 
- router.get('/feiralivro/contains/:coords', async (req, res) => {
-    try {
-        // Converter as coordenadas do usuário com a função getCoords
-        let p1Long = getCoords(req.params.coords)[0];
-        let p1Lat = getCoords(req.params.coords)[1];
+router.get('/feiralivro/contains/:coords', async (req, res) => {
+	try {
+		// Converter as coordenadas do usuário com a função getCoords
+		let p1Long = getCoords(req.params.coords)[0];
+		let p1Lat = getCoords(req.params.coords)[1];
 
-        // Consultar a feira do livro usando o operador $geoIntersects
-        const feiraDoLivro = await db.collection("livrarias").find({
+		// Consultar a feira do livro usando o operador $geoIntersects
+		const feiraDoLivro = await db.collection("livrarias").find({
 			//_id: 15 da feira do livro
 			_id: 15,
-            geometry: {
-                $geoIntersects: {
-                    $geometry: {
-                        type: "Point",
-                        coordinates: 
-                            [ p1Long, p1Lat ]
-                    }
-                }
-            }
-        }).toArray();
-     if(feiraDoLivro.length > 0 ){
-        res.send({ message: "O usuário está dentro da área da feira do livro." }).status(200);
+			geometry: {
+				$geoIntersects: {
+					$geometry: {
+						type: "Point",
+						coordinates:
+							[p1Long, p1Lat]
+					}
+				}
+			}
+		}).toArray();
+		if (feiraDoLivro.length > 0) {
+			res.send({ message: "O usuário está dentro da área da feira do livro." }).status(200);
 
-        }else{
-        res.send({ message: "O usuário não está dentro da área da feira do livro." }).status(200);
-        }
+		} else {
+			res.send({ message: "O usuário não está dentro da área da feira do livro." }).status(200);
+		}
 
-    } catch (error) {
-      res.send({ message: "Erro", error: error.message }).status(500);
-    }
-  })
+	} catch (error) {
+		res.send({ message: "Erro", error: error.message }).status(500);
+	}
+})
 
 export default router;
 

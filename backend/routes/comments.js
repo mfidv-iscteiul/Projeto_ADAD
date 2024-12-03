@@ -26,16 +26,16 @@ router.post("/", async (req, res) => {
 
 router.delete("/:id", async (req, res) => {
     try {
-        
+
         const commentID = VerifyID(req.params.id);
 
-        const result = await db.collection("comments").deleteOne({ 
+        const result = await db.collection("comments").deleteOne({
             _id: commentID
         });
 
         if (result.deletedCount === 1) {
             res.send(result).status(200);
-        }else{   // comentario nao encontrado
+        } else {   // comentario nao encontrado
             res.status(404).json({ message: "comentario não encontrado." });
         }
 
