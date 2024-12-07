@@ -86,6 +86,8 @@ router.get("/:id", async (req, res) => {
           _id: userID,
           first_name: { $first: "$first_name" },
           last_name: { $first: "$last_name" },
+          year_of_birth: { $first: "$year_of_birth" },
+          job: { $first: "$job" },
           top3_books: {
             $push: {
               score: "$reviews.score",

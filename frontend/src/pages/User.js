@@ -32,9 +32,7 @@ export default function App() {
 
   return (
     <div className="container pt-5 pb-5">
-		<h2>User page</h2>
-		<p><strong>Name:</strong> {user.first_name}</p>
-		<p><strong>Id:</strong> {user._id}</p>
+		<h1><strong>{user.first_name} {user.last_name}</strong></h1>
 		<p><strong>Job:</strong> {user.job}</p>
 		<p><strong>Year of birth:</strong> {user.year_of_birth}</p>
     </div>
