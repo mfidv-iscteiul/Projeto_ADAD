@@ -98,7 +98,7 @@ router.get("/:id", async (req, res) => {
       }
     ]).toArray();
     if (result.length === 0) return res.send({ message: "User não encontrado" }).status(404);
-    res.send(result).status(200);
+    res.send(result[0]).status(200);
 
   } catch (error) {
 
