@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { openContractCall } from '@stacks/connect';
 import {
 	bufferCV,
 } from '@stacks/transactions';
 import { utf8ToBytes } from '@stacks/common';
-import { userSession } from '../auth';
 const bytes = utf8ToBytes('foo');
 const bufCV = bufferCV(bytes);
 
@@ -29,10 +27,7 @@ export default function App() {
 	};
 
 	useEffect(() => {
-		let id = params.id;
-		console.log(id);
-		getBook(id);
-
+		getBook(params.id);
 	}, [params.id]);
 
 	return (

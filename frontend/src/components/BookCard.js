@@ -4,6 +4,7 @@ import ListGroup from 'react-bootstrap/ListGroup';
 import ListGroupItem from 'react-bootstrap/ListGroupItem';
 
 function BookCard(props) {
+  let i = 0;
   return (
     <Card style={{ width: '18rem' }} className="mb-3">
       <Card.Body style={{display: "flex",  flexDirection: "column"}}>
@@ -13,7 +14,7 @@ function BookCard(props) {
         <ListGroup variant="flush">
           {props.authors &&
             props.authors.map((author) => {
-              return <ListGroupItem>{author}</ListGroupItem>;
+              return <ListGroupItem key={i++}>{author}</ListGroupItem>;
           })}
         </ListGroup>
         <h5 style={{textAlign: 'center', fontWeight: "bold", marginTop: "auto"}}>{props.price}€</h5>
