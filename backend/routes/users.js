@@ -66,10 +66,11 @@ router.get("/:id", async (req, res) => {
   try {
 
     const userID = VerifyID(req.params.id);
-
+    console.log("Parâmetro de ID:", req.params.id);
+    console.log("ID do usuário convertido:", userID);
     const result = await db.collection("users").aggregate([
       { $match: { _id: userID } },
-      { $unwind: "$reviews" },
+      { $unwind: { path: "$reviews", preserveNullAndEmptyArrays: true } },
       { $sort: { "reviews.score": -1 } },
 
       {
@@ -99,6 +100,7 @@ router.get("/:id", async (req, res) => {
         }
       }
     ]).toArray();
+    
     if (result.length === 0) return res.send({ message: "User não encontrado" }).status(404);
     res.send(result[0]).status(200);
 
@@ -119,7 +121,7 @@ router.delete("/:id", async (req, res) => {
 
     const result = await db.collection("users").deleteOne(
       { _id: userID });
-
+      
     if (result.deletedCount === 1) {
 
       res.send(result).status(200);

@@ -2,6 +2,7 @@ import React, {useState, useEffect} from "react";
 import CardGroup from "react-bootstrap/CardGroup";
 import Row from "react-bootstrap/Row";
 import BookCard from "../components/BookCard";
+
 import { useParams, useNavigate } from "react-router-dom";
 import {
   bufferCV,
@@ -25,9 +26,32 @@ export default function App() {
 			  const data = await response.json();
 			  setUser(data);
 	  	} catch (error) {
-		  	console.error('Error:', error);
+		  	console.error('Erro:', error);
 		  }
   	};
+
+	  const deleteUser = async (id) => {
+		if (window.confirm("Are you sure you want to delete this user?")) {
+		  try {
+			const response = await fetch(`http://localhost:3000/users/${id}`, {
+			  method: "DELETE",
+			  headers: {
+				"Content-Type": "application/json",
+			  },
+			});
+	
+			if (response.ok) {
+			  alert("User deleted successfully");
+			  window.location.href = "/users/";
+			  
+			} else {
+			  alert("Failed to delete user");
+			}
+		  } catch (error) {
+			console.error("Erro:", error);
+		  }
+		}
+	  };
 
 	useEffect(() => {
 		getUser(params.id);
@@ -38,8 +62,9 @@ export default function App() {
 		<h1><strong>{user.first_name} {user.last_name}</strong></h1>
 		<p><strong>Profissão:</strong> {user.job}</p>
 		<p><strong>Ano de nascimento:</strong> {user.year_of_birth}</p>
+		<h4><strong>Top 3 reviews:</strong> </h4>
 		<div style={{display: "flex", justifyContent: "space-evenly"}}>
-		{user.top3_books &&
+		{user.top3_books && user.top3_books.length>0  && user.top3_books.some(book => book.book_details && book.book_details.length > 0) && //condiçao para verificar que o bookdetails nao esta vazio o some vai ver se dentro do array verifiica a condiçao 
 			user.top3_books.map((book) => {
 				let userBookCard = <div style={{display: "flex", flexDirection: "column", alignItems: "center"}}>
 					<div style={{display: "flex", alignItems: "stretch", flexGrow: "1"}}><BookCard key={book.book_details[0]._id} {...book.book_details[0]} /></div>							
@@ -50,6 +75,17 @@ export default function App() {
 				return userBookCard;
 			})}
 		</div>
+		<button
+        className="btn btn-danger mt-3"
+        onClick={() => deleteUser(params.id)}
+		style={{
+			position: "absolute",
+			top: "100px",  // Distância do topo
+			right: "100px", // Distância da borda direita
+		  }}
+      >
+        Delete User
+      </button>
     </div>
   )
 }
