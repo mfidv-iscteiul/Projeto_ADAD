@@ -36,8 +36,8 @@ export default function App() {
   return (
     <div className="container pt-5 pb-5">
 		<h1><strong>{user.first_name} {user.last_name}</strong></h1>
-		<p><strong>Job:</strong> {user.job}</p>
-		<p><strong>Year of birth:</strong> {user.year_of_birth}</p>
+		<p><strong>Profissão:</strong> {user.job}</p>
+		<p><strong>Ano de nascimento:</strong> {user.year_of_birth}</p>
 		<div style={{display: "flex", justifyContent: "space-evenly"}}>
 		{user.top3_books &&
 			user.top3_books.map((book) => {

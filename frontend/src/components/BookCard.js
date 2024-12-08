@@ -10,7 +10,7 @@ function BookCard(props) {
       <Card.Body style={{display: "flex",  flexDirection: "column"}}>
         <Card.Img variant="top" src={props.thumbnailUrl}></Card.Img>
         <Card.Title style={{textAlign: 'center', marginBottom: 1.5 + "em"}}>{props.title}</Card.Title>
-        <Card.Subtitle style={{marginBottom: 0.5 + "em"}}>By:</Card.Subtitle>
+        <Card.Subtitle style={{marginBottom: 0.5 + "em"}}>De</Card.Subtitle>
         <ListGroup variant="flush">
           {props.authors &&
             props.authors.map((author) => {
@@ -20,7 +20,8 @@ function BookCard(props) {
         <h5 style={{textAlign: 'center', fontWeight: "bold", marginTop: "auto"}}>{props.price}€</h5>
       </Card.Body>
       <Card.Footer>
-      <Button href={"/book/" + props._id} variant="outline-primary">Open Book</Button></Card.Footer>
+        <Button href={"/book/" + props._id} variant="outline-primary">Open Book</Button>
+      </Card.Footer>
     </Card>
   );
 }
