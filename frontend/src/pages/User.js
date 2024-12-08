@@ -69,7 +69,7 @@ export default function App() {
 				let userBookCard = <div style={{display: "flex", flexDirection: "column", alignItems: "center"}}>
 					<div style={{display: "flex", alignItems: "stretch", flexGrow: "1"}}><BookCard key={book.book_details[0]._id} {...book.book_details[0]} /></div>							
 					<p style={{ fontSize: "1.3em" }}><span style={{ fontSize: "1.5em" }}><strong>{book.score}</strong></span>/5</p>
-					{book.recommendation ? <p style={{padding: "9px", color: "#3c3c3c", backgroundColor: "rgba(0, 215, 24, 0.62)", borderRadius: "25px"}}>"Recomendo!"</p> : <p style={{padding: "9px", color: "#3c3c3c", backgroundColor: "rgba(217, 0, 0, 0.74)", borderRadius: "25px"}}>"Não Recomendo"</p>}
+					{book.recommendation ? <p style={{padding: "9px", color: "#3c3c3c", backgroundColor: "rgba(0, 215, 24, 0.62)", borderRadius: "25px"}}>Recomendo!</p> : <p style={{padding: "9px", color: "#3c3c3c", backgroundColor: "rgba(217, 0, 0, 0.74)", borderRadius: "25px"}}>Não Recomendo</p>}
 					<p>{new Date(parseInt(book.review_date)).toLocaleDateString()}</p>
 				</div>;
 				return userBookCard;
