@@ -1,4 +1,7 @@
 import React, {useState, useEffect} from "react";
+import CardGroup from "react-bootstrap/CardGroup";
+import Row from "react-bootstrap/Row";
+import BookCard from "../components/BookCard";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   bufferCV,
@@ -35,6 +38,18 @@ export default function App() {
 		<h1><strong>{user.first_name} {user.last_name}</strong></h1>
 		<p><strong>Job:</strong> {user.job}</p>
 		<p><strong>Year of birth:</strong> {user.year_of_birth}</p>
+		<div style={{display: "flex", justifyContent: "space-evenly"}}>
+		{user.top3_books &&
+			user.top3_books.map((book) => {
+				let userBookCard = <div style={{display: "flex", flexDirection: "column", alignItems: "center"}}>
+					<div style={{display: "flex", alignItems: "stretch", flexGrow: "1"}}><BookCard key={book.book_details[0]._id} {...book.book_details[0]} /></div>							
+					<p style={{ fontSize: "1.3em" }}><span style={{ fontSize: "1.5em" }}><strong>{book.score}</strong></span>/5</p>
+					{book.recommendation ? <p style={{padding: "9px", color: "#3c3c3c", backgroundColor: "rgba(0, 215, 24, 0.62)", borderRadius: "25px"}}>"Recomendo!"</p> : <p style={{padding: "9px", color: "#3c3c3c", backgroundColor: "rgba(217, 0, 0, 0.74)", borderRadius: "25px"}}>"Não Recomendo"</p>}
+					<p>{new Date(parseInt(book.review_date)).toLocaleDateString()}</p>
+				</div>;
+				return userBookCard;
+			})}
+		</div>
     </div>
   )
 }
