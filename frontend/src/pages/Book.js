@@ -66,14 +66,17 @@ export default function App() {
 			</ul>
 			<h2>Comentários</h2>
 			<ul style={{ listStyle: "none" }}>
-						{book.comments &&
-							book.comments.map((comment) => {
-								return <li key={comment._id}>
-									<h6><strong>User ID: {comment.user_id}</strong></h6>
-									<p>{comment.comment}</p>
-								</li>;
-							})}
-					</ul>
+    			{book.comments &&
+       				book.comments.map((comment) => {
+            			return (
+               			<li key={comment._id}>
+                    		<h6><strong>{comment.name}</strong></h6>
+                    		<p>{comment.comment}</p>
+                		</li>
+            			);
+        		})}
+			</ul>
+
 		</div>
 	)
 }

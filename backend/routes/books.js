@@ -76,46 +76,64 @@ router.post('/', async (req, res) => {
 
 // 5. GET /books/:id - Buscar livro por _id com média de score e comentários
 router.get('/id/:id', async (req, res) => {
-	try {
+    try {
+        let bookId = VerifyID(req.params.id);
 
-		let bookId = VerifyID(req.params.id);
+        // Buscar o livro com os comentários
+        const book = await db.collection("books").aggregate([
+            { $match: { _id: bookId } },
+            {
+                $lookup: {
+                    from: "comments",
+                    localField: "_id",
+                    foreignField: "book_id",
+                    as: "comments"
+                }
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "comments.user_id",
+                    foreignField: "_id",
+                    as: "userDetails"
+                }
+            }
+        ]).toArray();
 
-		const book = await db.collection("books").aggregate([
-			{ $match: { _id: bookId } },
+        // Se o livro não for encontrado
+        if (book.length === 0) {
+            return res.status(404).send({ message: "Livro não encontrado" });
+        }
 
-			{
-				$lookup: {
-					from: "comments",
-					localField: "_id",
-					foreignField: "book_id",
-					as: "comments"
-				}
-			},
+        // Adicionar nome completo diretamente nos comentários
+        const bookWithNames = book[0];
+        bookWithNames.comments = bookWithNames.comments.map(comment => {
+            const user = bookWithNames.userDetails.find(user => user._id.toString() === comment.user_id.toString());
+            comment.name = user ? `${user.first_name} ${user.last_name}` : "Anônimo";
+            return comment;
+        });
 
-		]).toArray();
+        // Remover detalhes do usuário para não retornar dados desnecessários
+        delete bookWithNames.userDetails;
 
-		if (book.length === 0) return res.send({ message: "Livro não encontrado" }).status(404);
+        // Calcular a média de scores dos reviews dos users
+        const scoreData = await db.collection("users").aggregate([
+            { $unwind: "$reviews" },
+            { $match: { "reviews.book_id": bookId } },
+            { $group: { _id: null, averageScore: { $avg: "$reviews.score" } } }
+        ]).toArray();
 
-		// Calcular a média de scores dos reviews dos users
-		const scoreData = await db.collection("users").aggregate([
+        // Adicionar a média de score ao livro
+        bookWithNames.averageScore = scoreData.length > 0 ? scoreData[0].averageScore : 0;
 
-			{ $unwind: "$reviews" },
+        // Retornar o livro com os dados atualizados
+        return res.status(200).send(bookWithNames);
 
-			{ $match: { "reviews.book_id": bookId } },
-
-			{ $group: { _id: null, averageScore: { $avg: "$reviews.score" } } }
-
-		]).toArray();
-
-		// Adicionar a média de score ao livro
-		book[0].averageScore = scoreData.length > 0 ? scoreData[0].averageScore : 0;
-
-		return res.send(book[0]).status(200);
-
-	} catch (error) {
-		res.send({ message: "Erro ao buscar livro", error: error.message }).status(500);
-	}
+    } catch (error) {
+        return res.status(500).send({ message: "Erro ao buscar livro", error: error.message });
+    }
 });
+
 
 // 7. DELETE /books/:id - Remover livro pelo _id
 router.delete('/:id', async (req, res) => {
